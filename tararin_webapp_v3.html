@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a3a6b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TRR999">
+  <title>TRR999 - ระบบแจ้งซ่อม</title>
+  <link rel="apple-touch-icon" href="TRR999logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Firebase compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --blue:#1a3a6b; --blue-l:#2a5298; --blue-d:#0f2344;
+      --gold:#f0a500; --gold-l:#f5bc40; --gold-d:#c78800;
+      --green:#10b981; --red:#ef4444;
+      --g50:#f9fafb; --g100:#f3f4f6; --g200:#e5e7eb;
+      --g300:#d1d5db; --g400:#9ca3af; --g500:#6b7280; --g700:#374151; --g900:#111827;
+      --shadow:0 2px 12px rgba(0,0,0,0.1); --shadow-lg:0 8px 32px rgba(0,0,0,0.15);
+      --r:12px; --rs:8px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Sarabun',sans-serif;background:var(--g100);color:var(--g900);min-height:100vh;font-size:15px;line-height:1.5}
+
+    /* Header */
+    .header{background:linear-gradient(135deg,var(--blue-d) 0%,var(--blue) 100%);color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+    .header-inner{display:flex;align-items:center;padding:12px 16px;gap:12px}
+    .logo{width:48px;height:48px;flex-shrink:0;border-radius:50%;object-fit:contain}
+    .header-text h1{font-size:16px;font-weight:700;line-height:1.2}
+    .header-text p{font-size:12px;opacity:.8}
+    .header-right{margin-left:auto;text-align:right}
+    .time-d{font-size:13px;font-weight:600;color:var(--gold-l)}
+    .date-d{font-size:11px;opacity:.7}
+
+    /* Tabs */
+    .tabs{background:var(--blue-d);display:flex;border-top:1px solid rgba(255,255,255,.1)}
+    .tab-btn{flex:1;padding:10px 4px;background:none;border:none;color:rgba(255,255,255,.6);font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;border-bottom:3px solid transparent;transition:all .2s}
+    .tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+    .tab-btn svg{width:18px;height:18px}
+
+    /* Layout */
+    .content{max-width:600px;margin:0 auto;padding:16px}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+
+    /* Card */
+    .card{background:#fff;border-radius:var(--r);padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+    .card-title{font-size:17px;font-weight:700;color:var(--blue);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+    .card-title::before{content:'';width:4px;height:20px;background:var(--gold);border-radius:2px;flex-shrink:0}
+
+    /* Form — mobile-first: 56px inputs, 16px font (ป้องกัน auto-zoom Android) */
+    .fg{margin-bottom:16px}
+    label{display:block;font-size:15px;font-weight:700;color:var(--g700);margin-bottom:8px}
+    label .req{color:var(--red);margin-left:2px}
+    input[type=text],input[type=number],input[type=password],select,textarea{
+      width:100%;padding:14px 16px;
+      border:2px solid var(--g200);border-radius:var(--rs);
+      font-family:'Sarabun',sans-serif;font-size:16px;
+      color:var(--g900);background:#fff;
+      transition:border-color .2s;outline:none;
+      min-height:56px;
+      -webkit-appearance:none;
+    }
+    input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,58,107,.12)}
+    textarea{min-height:110px;resize:none;line-height:1.6}
+    select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:44px}
+
+    /* Saved name chip */
+    .saved-name-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+    .saved-name-chip{display:flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(26,58,107,.08);border:1.5px solid rgba(26,58,107,.2);border-radius:20px;font-size:14px;font-weight:600;color:var(--blue);cursor:pointer;transition:all .2s}
+    .saved-name-chip:hover{background:rgba(26,58,107,.15)}
+    .saved-name-label{font-size:13px;color:var(--g400)}
+
+    /* Recent vehicles */
+    .recent-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .recent-chip{padding:7px 14px;background:var(--g100);border:1.5px solid var(--g200);border-radius:8px;font-size:14px;font-weight:600;color:var(--g700);cursor:pointer;transition:all .2s}
+    .recent-chip:hover{background:var(--g200)}
+
+    /* Camera button — big, obvious */
+    .camera-btn{width:100%;min-height:80px;border:3px dashed rgba(26,58,107,.25);border-radius:var(--r);background:rgba(26,58,107,.03);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;position:relative;transition:all .2s}
+    .camera-btn:hover,.camera-btn:active{background:rgba(26,58,107,.08);border-color:var(--blue)}
+    .camera-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .camera-btn-icon{font-size:28px}
+    .camera-btn-text{font-size:15px;font-weight:700;color:var(--blue)}
+    .camera-btn-sub{font-size:12px;color:var(--g400)}
+    .camera-preview{margin-top:10px;display:none;position:relative}
+    .camera-preview img{width:100%;max-height:200px;object-fit:cover;border-radius:var(--rs)}
+    .camera-remove{position:absolute;top:8px;right:8px;width:30px;height:30px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+    /* Sticky submit bar — fixed bottom, thumb reach */
+    .sticky-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--g200);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px;z-index:200;box-shadow:0 -4px 20px rgba(0,0,0,.1)}
+    .sticky-bar .btn-clear{flex:0 0 auto;width:auto;padding:14px 20px;font-size:15px}
+    .sticky-bar .btn-submit-gold{flex:1;font-size:17px;font-weight:800;min-height:54px}
+
+    /* content padding for sticky bar */
+    .has-sticky-bar{padding-bottom:100px}
+
+    /* Success overlay */
+    .success-overlay{position:fixed;inset:0;background:#fff;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;opacity:0;pointer-events:none;transition:opacity .3s}
+    .success-overlay.show{opacity:1;pointer-events:all}
+    .success-circle{width:96px;height:96px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin-bottom:20px;animation:pop .4s ease-out}
+    .success-circle svg{width:52px;height:52px;color:#16a34a}
+    .success-title{font-size:24px;font-weight:800;color:var(--g900);margin-bottom:8px;text-align:center}
+    .success-sub{font-size:16px;color:var(--g500);text-align:center;margin-bottom:32px}
+    .success-back{padding:16px 40px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:'Sarabun',sans-serif;font-size:17px;font-weight:700;cursor:pointer}
+    @keyframes pop{0%{transform:scale(0.5);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+
+    /* Photo upload */
+    .photo-upload{border:2px dashed var(--g300);border-radius:var(--rs);padding:20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--g50)}
+    .photo-upload:hover{border-color:var(--blue)}
+    .photo-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .photo-upload-icon{font-size:32px;margin-bottom:8px}
+    .photo-upload-text{font-size:14px;color:var(--g500)}
+    .photo-preview{margin-top:10px;display:none}
+    .photo-preview img{max-width:100%;max-height:200px;border-radius:var(--rs);object-fit:cover}
+
+    /* Urgency */
+    .urg-group{display:flex;gap:8px}
+    .urg-btn{flex:1;padding:8px;border:2px solid var(--g200);border-radius:var(--rs);background:#fff;font-family:'Sarabun',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;text-align:center}
+    .sel-ด่วน{border-color:var(--red)!important;background:#fef2f2!important;color:var(--red)!important;font-weight:600!important}
+    .sel-ปกติ{border-color:#f59e0b!important;background:#fffbeb!important;color:#b45309!important;font-weight:600!important}
+    .sel-ไม่ด่วน{border-color:var(--green)!important;background:#f0fdf4!important;color:#15803d!important;font-weight:600!important}
+
+    /* Buttons */
+    .btn{width:100%;padding:14px;border:none;border-radius:var(--rs);font-family:'Sarabun',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+    .btn-primary{background:linear-gradient(135deg,var(--blue) 0%,var(--blue-l) 100%);color:#fff;box-shadow:0 4px 12px rgba(26,58,107,.3)}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(26,58,107,.4)}
+    .btn-primary:active{transform:translateY(0)}
+    .btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+    .btn-gold{background:linear-gradient(135deg,var(--gold-d) 0%,var(--gold) 100%);color:#fff;box-shadow:0 4px 12px rgba(240,165,0,.3)}
+    .btn-sm{width:auto;padding:8px 16px;font-size:14px}
+    .btn-outline{background:#fff;border:1.5px solid var(--g300);color:var(--g700)}
+    .btn-danger-sm{background:#fee2e2;color:var(--red);border:none;padding:4px 10px;border-radius:6px;font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer}
+    .btn-edit-sm{background:rgba(26,58,107,.08);color:var(--blue);border:none;padding:4px 10px;border-radius:6px;font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer}
+
+    /* Submit button states */
+    .btn-step{font-size:13px;opacity:.85}
+
+    /* Vision Section */
+    .vision-card{background:linear-gradient(135deg,rgba(26,58,107,.04) 0%,rgba(240,165,0,.06) 100%);border:1.5px solid rgba(26,58,107,.15);border-radius:var(--r);padding:16px;margin-bottom:16px}
+    .vision-title{font-size:14px;font-weight:700;color:var(--blue);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+    .vision-cam-btn{width:100%;padding:14px;border:2px dashed rgba(26,58,107,.3);border-radius:var(--rs);background:rgba(26,58,107,.04);font-family:'Sarabun',sans-serif;font-size:15px;font-weight:600;color:var(--blue);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;position:relative}
+    .vision-cam-btn:hover{background:rgba(26,58,107,.08);border-color:var(--blue)}
+    .vision-cam-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .vision-hint{font-size:11px;color:var(--g400);font-weight:400}
+
+    .vision-analyzing{display:flex;align-items:center;gap:10px;padding:12px;background:#fff;border-radius:var(--rs);margin-top:10px}
+    .vision-analyzing p{font-size:14px;color:var(--g700)}
+
+    .detected-result{margin-top:10px;display:none}
+    .detected-label{font-size:12px;font-weight:600;color:var(--g500);margin-bottom:6px}
+    .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+    .chip{padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all .2s}
+    .chip-item{background:rgba(26,58,107,.08);color:var(--blue);border-color:rgba(26,58,107,.2)}
+    .chip-item:hover,.chip-item.selected{background:var(--blue);color:#fff;border-color:var(--blue)}
+    .chip-qty{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
+    .chip-qty:hover,.chip-qty.selected{background:#15803d;color:#fff;border-color:#15803d}
+    .chip-text{background:#f8f7ff;color:#6d28d9;border-color:#ddd6fe;font-size:11px;font-weight:500;cursor:default}
+
+    .vision-img-preview{width:100%;max-height:140px;object-fit:cover;border-radius:var(--rs);margin-top:10px;display:none}
+
+    /* Stock Grid */
+    .stock-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .stock-item{background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:transform .2s,box-shadow .2s}
+    .stock-item:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+    .stock-item-img{width:100%;height:110px;background:var(--g100);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden}
+    .stock-item-img img{width:100%;height:100%;object-fit:cover}
+    .stock-item-body{padding:10px}
+    .stock-item-name{font-size:14px;font-weight:600;color:var(--g900);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .qty-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600}
+    .qty-ok{background:#dcfce7;color:#16a34a}
+    .qty-low{background:#fef9c3;color:#ca8a04}
+    .qty-out{background:#fee2e2;color:#dc2626}
+    .admin-actions{display:none;gap:6px;margin-top:8px}
+    .admin-actions.show{display:flex}
+
+    /* Admin */
+    .admin-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+    .admin-badge{background:linear-gradient(135deg,var(--blue) 0%,var(--blue-l) 100%);color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}
+    .add-stock-card{display:none}
+    .add-stock-card.show{display:block}
+
+    /* Modal */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
+    .modal-overlay.show{opacity:1;pointer-events:all}
+    .modal{background:#fff;border-radius:var(--r);width:100%;max-width:420px;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-lg);transform:scale(.9);transition:transform .2s}
+    .modal-overlay.show .modal{transform:scale(1)}
+    .modal-header{padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between}
+    .modal-title{font-size:17px;font-weight:700;color:var(--blue)}
+    .modal-close{width:32px;height:32px;border:none;background:var(--g100);border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--g500)}
+    .modal-body{padding:16px 20px 20px}
+    .modal-img{width:100%;max-height:200px;object-fit:cover;border-radius:var(--rs);margin-bottom:14px}
+    .detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--g100)}
+    .detail-row:last-child{border-bottom:none}
+    .detail-label{font-size:13px;color:var(--g500);flex-shrink:0}
+    .detail-value{font-size:14px;font-weight:600;color:var(--g900);text-align:right;max-width:65%}
+
+    /* Toast */
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--g900);color:#fff;padding:12px 24px;border-radius:30px;font-size:14px;font-weight:500;box-shadow:var(--shadow-lg);z-index:2000;transition:transform .3s;white-space:nowrap}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+    .toast.success{background:var(--green)}
+    .toast.error{background:var(--red)}
+
+    /* Spinner */
+    .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+    .spinner-dark{width:16px;height:16px;border:2px solid rgba(26,58,107,.2);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* 2-column form row — desktop only, mobile always 1 col */
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:600px){.form-row{grid-template-columns:1fr}}
+
+    /* Connection pill */
+    .conn-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:14px}
+    .conn-pill.ok{background:#dcfce7;color:#15803d}
+    .conn-pill.err{background:#fee2e2;color:#dc2626}
+    .conn-pill.wait{background:var(--g100);color:var(--g500)}
+    .conn-dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+
+    /* Card with icon */
+    .card-head{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+    .card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .card-icon svg{width:22px;height:22px}
+    .card-icon-blue{background:rgba(26,58,107,0.1);color:var(--blue)}
+    .card-icon-green{background:#dcfce7;color:#15803d}
+    .card-head-text h2{font-size:17px;font-weight:700;color:var(--g900);margin-bottom:2px}
+    .card-head-text p{font-size:12px;color:var(--g400)}
+
+    /* Upload area redesigned */
+    .upload-area{border:2px dashed var(--g300);border-radius:var(--rs);padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--g50)}
+    .upload-area:hover{border-color:var(--blue);background:rgba(26,58,107,.03)}
+    .upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .upload-icon{color:var(--g400);margin-bottom:8px}
+    .upload-main{font-size:14px;font-weight:600;color:var(--g700);margin-bottom:2px}
+    .upload-sub{font-size:12px;color:var(--g400)}
+    .upload-preview{margin-top:10px;display:none}
+    .upload-preview img{max-width:100%;max-height:180px;border-radius:var(--rs);object-fit:cover}
+
+    /* Button pair */
+    .btn-pair{display:flex;gap:10px;margin-top:6px}
+    .btn-pair .btn{flex:1}
+    .btn-clear{background:#fff;border:1.5px solid var(--g300);color:var(--g700)}
+    .btn-clear:hover{background:var(--g50);border-color:var(--g400)}
+    .btn-submit-gold{background:linear-gradient(135deg,var(--gold-d) 0%,var(--gold) 100%);color:#fff;box-shadow:0 4px 12px rgba(240,165,0,.3)}
+    .btn-submit-gold:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(240,165,0,.4)}
+    .btn-submit-gold:active{transform:translateY(0)}
+    .btn-submit-gold:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+
+    /* Install Banner */
+    .install-banner{background:linear-gradient(135deg,var(--gold-d) 0%,var(--gold) 100%);color:#fff;padding:10px 16px;align-items:center;gap:10px;font-size:13px;display:none}
+    .install-banner.show{display:flex}
+    .ib-install{margin-left:auto;background:#fff;color:var(--gold-d);border:none;padding:5px 14px;border-radius:20px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
+    .ib-dismiss{background:rgba(255,255,255,.3);color:#fff;border:none;padding:5px 10px;border-radius:20px;font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer}
+
+    .empty-state{text-align:center;padding:40px 20px;color:var(--g400)}
+    .empty-state-icon{font-size:48px;margin-bottom:12px}
+
+    /* Firebase status dot */
+    .fb-status{width:8px;height:8px;border-radius:50%;background:var(--g300);display:inline-block;margin-left:6px}
+    .fb-status.connected{background:var(--green)}
+    .fb-status.error{background:var(--red)}
+
+    @media(max-width:360px){.stock-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+  <div class="install-banner" id="installBanner">
+    <span>📱 ติดตั้งแอพบนหน้าจอ</span>
+    <button class="ib-install" onclick="installPWA()">ติดตั้ง</button>
+    <button class="ib-dismiss" onclick="document.getElementById('installBanner').classList.remove('show')">✕</button>
+  </div>
+
+  <header class="header">
+    <div class="header-inner">
+      <img class="logo" src="TRR999logo.png" alt="TRR999">
+      <div class="header-text">
+        <h1>ธรารินทร์ 999 ขนส่ง</h1>
+        <p>ระบบแจ้งซ่อมและเบิกอุปกรณ์ <span class="fb-status" id="fbStatus" title="Firebase"></span></p>
+      </div>
+      <div class="header-right">
+        <div class="time-d" id="timeDisplay">--:--:--</div>
+        <div class="date-d" id="dateDisplay">--/--/----</div>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button class="tab-btn active" id="tab-btn-repair" onclick="switchTab('repair',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        แจ้งซ่อมรถ
+      </button>
+      <button class="tab-btn" id="tab-btn-req" onclick="switchTab('req',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        เบิกอุปกรณ์
+      </button>
+      <button class="tab-btn" id="tab-btn-stock" onclick="switchTab('stock',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        สต็อกอุปกรณ์
+      </button>
+    </nav>
+  </header>
+
+  <!-- Success Overlay -->
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-circle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="success-title" id="successTitle">ส่งสำเร็จแล้ว!</div>
+    <div class="success-sub" id="successSub">ข้อมูลถูกบันทึกเรียบร้อย</div>
+    <button class="success-back" onclick="closeSuccess()">กลับหน้าหลัก</button>
+  </div>
+
+  <main class="content has-sticky-bar">
+
+    <!-- ===== TAB: แจ้งซ่อมรถ ===== -->
+    <div id="tab-repair" class="tab-panel active">
+      <div id="repairConnPill" class="conn-pill wait"><span class="conn-dot"></span> กำลังเชื่อมต่อ...</div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon card-icon-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          </div>
+          <div class="card-head-text">
+            <h2>แจ้งซ่อมรถ</h2>
+            <p>ข้อมูลจะบันทึกลง Firebase ทันที</p>
+          </div>
+        </div>
+        <form id="repairForm" onsubmit="submitRepair(event)">
+          <div class="fg">
+            <label>ชื่อ-นามสกุลผู้แจ้ง <span class="req">*</span></label>
+            <div class="saved-name-bar" id="rSavedNames"></div>
+            <input type="text" id="r_reporter" placeholder="ชื่อ-นามสกุล"
+                   autocomplete="name" autocorrect="off" required
+                   onblur="saveName(this.value)">
+          </div>
+          <div class="fg">
+            <label>เลขทะเบียนรถ <span class="req">*</span></label>
+            <input type="text" id="r_vehicle" placeholder="เช่น กข-1234"
+                   autocomplete="off" autocorrect="off" autocapitalize="characters" required
+                   oninput="this.value=this.value.toUpperCase()" onblur="saveVehicle(this.value)">
+            <div class="recent-list" id="rRecentVehicles"></div>
+          </div>
+          <div class="fg">
+            <label>เลขไมล์ปัจจุบัน (กม.) <span class="req">*</span></label>
+            <input type="number" id="r_mileage" placeholder="เช่น 45000"
+                   inputmode="numeric" min="0" required>
+          </div>
+          <div class="fg">
+            <label>อาการที่พบ <span class="req">*</span></label>
+            <textarea id="r_problem"
+                      placeholder="อธิบายอาการให้ชัดเจน เช่น&#10;• มีเสียงดัง ตอนเหยียบเบรก&#10;• น้ำมันรั่ว ใต้เครื่องยนต์&#10;• ไฟเตือนขึ้น..." required></textarea>
+          </div>
+          <div class="fg">
+            <label>ถ่ายรูปประกอบ</label>
+            <div class="camera-btn" id="rPhotoBox">
+              <input type="file" id="r_photo" accept="image/*" capture="environment"
+                     onchange="handleCamera(this,'rCamPreview','rPhotoBox')">
+              <div class="camera-btn-icon">📷</div>
+              <div class="camera-btn-text">ถ่ายรูปหรือเลือกจากคลัง</div>
+              <div class="camera-btn-sub">แนะนำถ่ายรูปจุดที่เสีย</div>
+            </div>
+            <div class="camera-preview" id="rCamPreview">
+              <img src="" alt="">
+              <button type="button" class="camera-remove" onclick="removePhoto('r_photo','rCamPreview','rPhotoBox')">✕</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===== TAB: เบิกอุปกรณ์ ===== -->
+    <div id="tab-req" class="tab-panel">
+      <div id="reqConnPill" class="conn-pill wait"><span class="conn-dot"></span> กำลังเชื่อมต่อ...</div>
+
+      <!-- Vision Camera Section -->
+      <div class="vision-card">
+        <div class="vision-title">
+          🤖 AI detect ของจากรูปภาพ
+          <span style="font-size:11px;color:var(--g400);font-weight:400">ถ่ายรูป → autofill ฟอร์ม</span>
+        </div>
+        <div class="vision-cam-btn" onclick="triggerVisionCamera()">
+          <input type="file" id="q_vision_file" accept="image/*" capture="environment"
+                 onchange="analyzeVisionImage(this)" style="z-index:1">
+          <span style="font-size:20px">📸</span>
+          <span>ถ่ายรูปของที่จะเบิก</span>
+        </div>
+        <img id="visionPreviewImg" class="vision-img-preview" src="" alt="">
+        <div class="vision-analyzing" id="visionAnalyzing" style="display:none">
+          <div class="spinner-dark"></div>
+          <p>กำลังวิเคราะห์รูปภาพ...</p>
+        </div>
+        <div class="detected-result" id="detectedResult">
+          <div class="detected-label">🔍 พบวัตถุ — กดเลือกเพื่อกรอกอัตโนมัติ</div>
+          <div class="chips" id="itemChips"></div>
+          <div class="detected-label">📦 จำนวนที่พบ</div>
+          <div class="chips" id="qtyChips"></div>
+          <div id="rawTextBox" style="display:none">
+            <div class="detected-label">📝 ข้อความในรูป</div>
+            <div class="chips" id="textChips"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon card-icon-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <div class="card-head-text">
+            <h2>เบิกอุปกรณ์ซ่อม</h2>
+            <p>ตัดยอดสต็อกอัตโนมัติ</p>
+          </div>
+        </div>
+        <form id="reqForm" onsubmit="submitRequisition(event)">
+          <div class="fg">
+            <label>ชื่อ-นามสกุลผู้เบิก <span class="req">*</span></label>
+            <div class="saved-name-bar" id="qSavedNames"></div>
+            <input type="text" id="q_requester" placeholder="ชื่อ-นามสกุล"
+                   autocomplete="name" autocorrect="off" required
+                   onblur="saveName(this.value)">
+          </div>
+          <div class="fg">
+            <label>เลขทะเบียนรถ <span class="req">*</span></label>
+            <input type="text" id="q_vehicle" placeholder="เช่น กข-1234"
+                   autocomplete="off" autocorrect="off" autocapitalize="characters" required
+                   oninput="this.value=this.value.toUpperCase()" onblur="saveVehicle(this.value)">
+            <div class="recent-list" id="qRecentVehicles"></div>
+          </div>
+          <div class="fg">
+            <label>ชื่ออุปกรณ์ / วัสดุ <span class="req">*</span></label>
+            <input type="text" id="q_name" placeholder="เช่น น้ำมันเครื่อง, ยางอะไหล่"
+                   autocomplete="off" required>
+          </div>
+          <div class="form-row fg">
+            <div>
+              <label>จำนวน <span class="req">*</span></label>
+              <input type="number" id="q_qty" placeholder="0" min="1"
+                     inputmode="numeric" required>
+            </div>
+            <div>
+              <label>หน่วย</label>
+              <input type="text" id="q_unit" placeholder="ลิตร / ชิ้น / กล่อง">
+            </div>
+          </div>
+          <div class="fg">
+            <label>วัตถุประสงค์ (ถ้ามี)</label>
+            <textarea id="q_purpose" placeholder="ใช้สำหรับ..." style="min-height:80px"></textarea>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===== TAB: สต็อก ===== -->
+    <div id="tab-stock" class="tab-panel">
+      <div class="admin-bar">
+        <span class="admin-badge" id="adminBadge" style="display:none">👑 แอดมิน</span>
+        <button class="btn btn-sm btn-outline" id="adminLoginBtn" onclick="showModal('loginModal')" style="margin-left:auto">🔐 เข้าสู่ระบบ</button>
+        <button class="btn btn-sm btn-outline" id="adminLogoutBtn" onclick="adminLogout()" style="display:none;margin-left:auto">ออกจากระบบ</button>
+      </div>
+      <div id="addStockSection" style="display:none;margin-bottom:16px">
+        <button class="btn btn-gold" onclick="toggleAddForm()">+ เพิ่มรายการสต็อก</button>
+      </div>
+      <div class="card add-stock-card" id="addStockCard">
+        <div class="card-title">เพิ่มรายการสต็อก</div>
+        <form id="addStockForm" onsubmit="submitAddStock(event)">
+          <div class="fg"><label>ชื่ออุปกรณ์ <span class="req">*</span></label><input type="text" id="s_name" required></div>
+          <div class="fg"><label>จำนวน <span class="req">*</span></label><div style="display:flex;gap:8px"><input type="number" id="s_qty" min="0" required style="width:120px"><input type="text" id="s_unit" placeholder="หน่วย"></div></div>
+          <div class="fg"><label>หมวดหมู่</label><select id="s_cat"><option>ทั่วไป</option><option>น้ำมัน/สารหล่อลื่น</option><option>ยาง/ล้อ</option><option>เครื่องยนต์</option><option>ไฟฟ้า</option><option>เครื่องมือ</option></select></div>
+          <div class="fg"><label>รายละเอียด</label><textarea id="s_details" placeholder="ข้อมูลเพิ่มเติม..."></textarea></div>
+          <div class="fg">
+            <label>รูปภาพ</label>
+            <div class="photo-upload" id="sPhotoBox"><input type="file" id="s_photo" accept="image/*" onchange="previewPhoto(this,'sPhotoPreview','sPhotoBox')"><div class="photo-upload-icon">🖼️</div><div class="photo-upload-text">แตะเพื่อเลือกรูป</div></div>
+            <div class="photo-preview" id="sPhotoPreview"><img src="" alt=""></div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button type="submit" class="btn btn-gold" id="addStockBtn" style="flex:1">บันทึก</button>
+            <button type="button" class="btn btn-outline" onclick="toggleAddForm()" style="width:auto;padding:14px 20px">ยกเลิก</button>
+          </div>
+        </form>
+      </div>
+      <div class="card" style="padding:12px 16px;margin-bottom:12px">
+        <input type="text" id="stockSearch" placeholder="🔍 ค้นหาอุปกรณ์..." oninput="filterStock()" style="border:none;background:none;padding:4px 0;font-size:15px;width:100%;outline:none">
+      </div>
+      <div id="stockGrid" class="stock-grid">
+        <div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">📦</div><p>กำลังโหลด...</p></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Sticky Submit Bar — repair -->
+  <div class="sticky-bar" id="stickyRepair">
+    <button type="button" class="btn btn-clear" onclick="resetRepairForm()">ล้างข้อมูล</button>
+    <button type="submit" form="repairForm" class="btn btn-submit-gold" id="rSubmitBtn">ส่งคำขอซ่อม →</button>
+  </div>
+
+  <!-- Sticky Submit Bar — requisition -->
+  <div class="sticky-bar" id="stickyReq" style="display:none">
+    <button type="button" class="btn btn-clear" onclick="resetReqForm()">ล้างข้อมูล</button>
+    <button type="submit" form="reqForm" class="btn btn-submit-gold" id="qSubmitBtn">ส่งใบเบิก →</button>
+  </div>
+
+  <!-- Login Modal -->
+  <div class="modal-overlay" id="loginModal" onclick="overlayClose(event,'loginModal')">
+    <div class="modal">
+      <div class="modal-header"><div class="modal-title">🔐 เข้าสู่ระบบแอดมิน</div><button class="modal-close" onclick="closeModal('loginModal')">✕</button></div>
+      <div class="modal-body">
+        <div class="fg"><label>รหัสผ่าน</label><input type="password" id="adminPw" placeholder="กรอกรหัสผ่าน" onkeydown="if(event.key==='Enter')adminLogin()"></div>
+        <button class="btn btn-primary" onclick="adminLogin()">เข้าสู่ระบบ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stock Detail Modal -->
+  <div class="modal-overlay" id="detailModal" onclick="overlayClose(event,'detailModal')">
+    <div class="modal">
+      <div class="modal-header"><div class="modal-title" id="detailTitle">รายละเอียด</div><button class="modal-close" onclick="closeModal('detailModal')">✕</button></div>
+      <div class="modal-body" id="detailBody"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ========== FIREBASE CONFIG — แก้ค่าเหล่านี้ ==========
+    const firebaseConfig = {
+      apiKey:            "YOUR_API_KEY",
+      authDomain:        "YOUR_PROJECT.firebaseapp.com",
+      projectId:         "YOUR_PROJECT_ID",
+      storageBucket:     "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId:             "YOUR_APP_ID"
+    };
+
+    // GAS URL — สำหรับ Vision API + image upload + stock management
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwg5EQTXFLiLvN7RRlKgBL0vnt2IajLnixDqj-pD1YA9mJ91OMT2wUr1w79yFqv_I4R/exec';
+
+    const ADMIN_PW = 'tararin999';
+
+    // ========== Firebase Init ==========
+    let db;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      // Test connection
+      db.collection('_ping').limit(1).get()
+        .then(() => setFbStatus('connected'))
+        .catch(() => setFbStatus('error'));
+    } catch(e) {
+      setFbStatus('error');
+    }
+
+    function setFbStatus(s) {
+      const el = document.getElementById('fbStatus');
+      if (el) { el.className = 'fb-status ' + s; el.title = s === 'connected' ? 'Firebase OK' : 'Firebase error'; }
+      // Update conn pills on all tabs
+      const pills = document.querySelectorAll('.conn-pill');
+      pills.forEach(p => {
+        p.className = 'conn-pill ' + (s === 'connected' ? 'ok' : s === 'error' ? 'err' : 'wait');
+        p.innerHTML = `<span class="conn-dot"></span> ${s === 'connected' ? 'เชื่อมต่อแล้ว ✓' : s === 'error' ? 'เชื่อมต่อไม่ได้' : 'กำลังเชื่อมต่อ...'}`;
+      });
+    }
+
+    // ========== State ==========
+    let isAdmin = false;
+    let stockData = [];
+    let urgency = '';
+    let deferredPrompt = null;
+    let selectedItemName = '';
+    let selectedQtyValue = '';
+
+    // ========== Time ==========
+    function updateTime() {
+      const bkk = { timeZone: 'Asia/Bangkok' };
+      document.getElementById('timeDisplay').textContent =
+        new Date().toLocaleTimeString('th-TH', { ...bkk, hour12: false });
+      document.getElementById('dateDisplay').textContent =
+        new Date().toLocaleDateString('th-TH', { ...bkk, year:'numeric', month:'short', day:'numeric', weekday:'short' });
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // ========== Tabs ==========
+    function switchTab(name, btn) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      btn.classList.add('active');
+      // show/hide sticky bars
+      document.getElementById('stickyRepair').style.display = name === 'repair' ? 'flex' : 'none';
+      document.getElementById('stickyReq').style.display   = name === 'req'    ? 'flex' : 'none';
+      if (name === 'stock') loadStock();
+    }
+
+    // ========== localStorage: saved names + vehicles ==========
+    function saveName(val) {
+      val = val.trim();
+      if (!val) return;
+      const names = getSavedNames();
+      if (!names.includes(val)) { names.unshift(val); localStorage.setItem('trr_names', JSON.stringify(names.slice(0, 5))); }
+      renderSavedNames();
+    }
+    function getSavedNames() {
+      try { return JSON.parse(localStorage.getItem('trr_names') || '[]'); } catch { return []; }
+    }
+    function renderSavedNames() {
+      const names = getSavedNames();
+      ['rSavedNames','qSavedNames'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = names.length ? '<span class="saved-name-label">ใช้ชื่อ:</span>' + names.map(n =>
+          `<span class="saved-name-chip" onclick="fillName('${n.replace(/'/g,"\\'")}',this)">👤 ${n}</span>`
+        ).join('') : '';
+      });
+    }
+    function fillName(name, chip) {
+      const isReq = chip.closest('#tab-req');
+      document.getElementById(isReq ? 'q_requester' : 'r_reporter').value = name;
+    }
+
+    function saveVehicle(val) {
+      val = val.trim().toUpperCase();
+      if (!val || val.length < 3) return;
+      const list = getSavedVehicles();
+      if (!list.includes(val)) { list.unshift(val); localStorage.setItem('trr_vehicles', JSON.stringify(list.slice(0, 8))); }
+      renderRecentVehicles();
+    }
+    function getSavedVehicles() {
+      try { return JSON.parse(localStorage.getItem('trr_vehicles') || '[]'); } catch { return []; }
+    }
+    function renderRecentVehicles() {
+      const list = getSavedVehicles();
+      ['rRecentVehicles','qRecentVehicles'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = list.map(v =>
+          `<span class="recent-chip" onclick="fillVehicle('${v}',this)">${v}</span>`
+        ).join('');
+      });
+    }
+    function fillVehicle(plate, chip) {
+      const isReq = chip.closest('#tab-req');
+      document.getElementById(isReq ? 'q_vehicle' : 'r_vehicle').value = plate;
+    }
+
+    // ========== Camera ==========
+    function handleCamera(input, previewId, boxId) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const prev = document.getElementById(previewId);
+        prev.querySelector('img').src = e.target.result;
+        prev.style.display = 'block';
+        document.getElementById(boxId).style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+    function removePhoto(inputId, previewId, boxId) {
+      document.getElementById(inputId).value = '';
+      document.getElementById(previewId).style.display = 'none';
+      document.getElementById(boxId).style.display = 'flex';
+    }
+
+    // ========== Success overlay ==========
+    function showSuccess(title, sub) {
+      document.getElementById('successTitle').textContent = title;
+      document.getElementById('successSub').textContent  = sub;
+      document.getElementById('successOverlay').classList.add('show');
+      // vibrate on Android
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+    }
+    function closeSuccess() {
+      document.getElementById('successOverlay').classList.remove('show');
+    }
+
+    // ========== Urgency ==========
+    function setUrgency(level, btn) {
+      urgency = level;
+      document.getElementById('r_urgency').value = level;
+      document.querySelectorAll('.urg-btn').forEach(b => b.className = 'urg-btn');
+      btn.classList.add('sel-' + level);
+    }
+
+    // ========== Photo/Upload Preview ==========
+    function previewPhoto(input, previewId, boxId) { previewUpload(input, previewId, boxId); }
+    function previewUpload(input, previewId, boxId) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const div = document.getElementById(previewId);
+        div.querySelector('img').src = e.target.result;
+        div.style.display = 'block';
+        document.getElementById(boxId).style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ========== Helpers ==========
+    function fileToBase64(file) {
+      return new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = e => res(e.target.result.split(',')[1]);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+    }
+
+    function thaiNow() {
+      return new Date().toLocaleString('th-TH', {
+        timeZone:'Asia/Bangkok', year:'numeric', month:'2-digit', day:'2-digit',
+        hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+      });
+    }
+
+    function genUUID() {
+      return 'trr-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
+    }
+
+    // Compress image before upload (reduce size to ~300KB max)
+    function compressImage(file, maxKB = 300) {
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let w = img.width, h = img.height;
+            const maxDim = 1200;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+              else       { w = Math.round(w * maxDim / h); h = maxDim; }
+            }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.75);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function compressToBase64(file) {
+      const blob = await compressImage(file);
+      return new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = e => res(e.target.result.split(',')[1]);
+        r.onerror = rej;
+        r.readAsDataURL(blob);
+      });
+    }
+
+    // ========== SUBMIT REPAIR — Firebase instant ==========
+    async function submitRepair(e) {
+      e.preventDefault();
+
+      const btn = document.getElementById('rSubmitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...';
+
+      const uuid = genUUID();
+      const data = {
+        uuid,
+        datetime:  thaiNow(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        reporter:  document.getElementById('r_reporter').value.trim(),
+        vehicle:   document.getElementById('r_vehicle').value.trim(),
+        mileage:   document.getElementById('r_mileage').value.trim(),
+        problem:   document.getElementById('r_problem').value.trim(),
+        photoUrl:  '',
+        status:    'รอดำเนินการ'
+      };
+
+      try {
+        const photoFile = document.getElementById('r_photo').files[0];
+        const docRef = await db.collection('repairs').add(data);
+        showSuccess('ส่งคำขอซ่อมสำเร็จ!', `ทะเบียน ${data.vehicle} · ไมล์ ${data.mileage} กม.`);
+        resetRepairForm();
+        btn.disabled = false;
+        btn.textContent = 'ส่งคำขอซ่อม →';
+
+        syncAndClean('repairs', docRef.id, data, photoFile || null);
+
+      } catch (err) {
+        toast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'ส่งคำขอซ่อม →';
+      }
+    }
+
+    // ========== SUBMIT REQUISITION — Firebase instant ==========
+    async function submitRequisition(e) {
+      e.preventDefault();
+
+      const btn = document.getElementById('qSubmitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...';
+
+      const uuid = genUUID();
+      const data = {
+        uuid,
+        datetime:   thaiNow(),
+        createdAt:  firebase.firestore.FieldValue.serverTimestamp(),
+        requester:  document.getElementById('q_requester').value.trim(),
+        vehicle:    document.getElementById('q_vehicle').value.trim(),
+        equipName:  document.getElementById('q_name').value.trim(),
+        qty:        document.getElementById('q_qty').value,
+        unit:       document.getElementById('q_unit').value.trim(),
+        department: document.getElementById('q_dept').value,
+        purpose:    document.getElementById('q_purpose').value.trim(),
+        photoUrl:   '',
+        status:     'รออนุมัติ'
+      };
+
+      try {
+        const visionFile = document.getElementById('q_vision_file').files[0];
+        const docRef = await db.collection('requisitions').add(data);
+        showSuccess('ส่งใบเบิกสำเร็จ!', `${data.equipName} ${data.qty} ${data.unit} · ${data.requester}`);
+        resetReqForm();
+        btn.disabled = false;
+        btn.textContent = 'ส่งใบเบิก →';
+
+        syncAndClean('requisitions', docRef.id, data, visionFile || null);
+
+      } catch (err) {
+        toast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'ส่งใบเบิก →';
+      }
+    }
+
+    // ========== Sync to Sheets → delete from Firebase ==========
+    // Firebase is a temp buffer only — after GAS confirms Sheets write, doc is deleted
+    async function syncAndClean(collection, docId, data, photoFile) {
+      try {
+        let photoBase64 = '', photoName = '';
+        if (photoFile) {
+          photoBase64 = await compressToBase64(photoFile);
+          photoName = photoFile.name;
+        }
+
+        const resp = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'syncToSheet',
+            collection,
+            data,
+            photoBase64,
+            photoName
+          })
+        });
+        const result = await resp.json();
+
+        if (result.success) {
+          // Sheets confirmed → clean up Firebase
+          await db.collection(collection).doc(docId).delete();
+        }
+        // If GAS fails → doc stays in Firebase (can be retried later)
+      } catch (err) {
+        console.warn('Sync failed, doc kept in Firebase for retry:', err);
+      }
+    }
+
+    // ========== Vision API ==========
+    function triggerVisionCamera() {
+      document.getElementById('q_vision_file').click();
+    }
+
+    async function analyzeVisionImage(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      // Show image preview
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.getElementById('visionPreviewImg');
+        img.src = e.target.result;
+        img.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+
+      // Show analyzing
+      document.getElementById('visionAnalyzing').style.display = 'flex';
+      document.getElementById('detectedResult').style.display = 'none';
+
+      try {
+        const base64 = await compressToBase64(file);
+        const resp = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'analyzeImage', imageBase64: base64 })
+        });
+        const data = await resp.json();
+
+        document.getElementById('visionAnalyzing').style.display = 'none';
+
+        if (data.success) {
+          showVisionResults(data);
+        } else {
+          toast('วิเคราะห์รูปไม่ได้: ' + (data.error || '?'), 'error');
+        }
+      } catch (err) {
+        document.getElementById('visionAnalyzing').style.display = 'none';
+        toast('ไม่สามารถเชื่อมต่อได้', 'error');
+      }
+    }
+
+    function showVisionResults(data) {
+      const result = document.getElementById('detectedResult');
+      result.style.display = 'block';
+
+      // Object chips
+      const itemChips = document.getElementById('itemChips');
+      itemChips.innerHTML = '';
+      const items = [...(data.objects || []), ...(data.labels || [])];
+      const uniqueItems = [...new Map(items.map(i => [i.name, i])).values()].slice(0, 8);
+
+      if (uniqueItems.length === 0) {
+        itemChips.innerHTML = '<span style="font-size:13px;color:var(--g400)">ไม่พบวัตถุในรูป</span>';
+      } else {
+        uniqueItems.forEach(item => {
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'chip chip-item';
+          chip.textContent = `${item.name} ${item.confidence ? item.confidence+'%' : ''}`;
+          chip.onclick = () => {
+            document.querySelectorAll('.chip-item').forEach(c => c.classList.remove('selected'));
+            chip.classList.add('selected');
+            document.getElementById('q_name').value = item.name;
+          };
+          itemChips.appendChild(chip);
+        });
+      }
+
+      // Quantity chips
+      const qtyChips = document.getElementById('qtyChips');
+      qtyChips.innerHTML = '';
+      if (data.quantities && data.quantities.length > 0) {
+        data.quantities.forEach(q => {
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'chip chip-qty';
+          chip.textContent = `${q.amount} ${q.unit}`;
+          chip.onclick = () => {
+            document.querySelectorAll('.chip-qty').forEach(c => c.classList.remove('selected'));
+            chip.classList.add('selected');
+            document.getElementById('q_qty').value = q.amount;
+            document.getElementById('q_unit').value = q.unit;
+          };
+          qtyChips.appendChild(chip);
+        });
+      } else {
+        qtyChips.innerHTML = '<span style="font-size:13px;color:var(--g400)">ไม่พบตัวเลขจำนวน</span>';
+      }
+
+      // Raw text (collapsed)
+      if (data.text && data.text.trim()) {
+        const rawBox = document.getElementById('rawTextBox');
+        rawBox.style.display = 'block';
+        const textChips = document.getElementById('textChips');
+        textChips.innerHTML = '';
+        data.text.trim().split('\n').slice(0, 5).forEach(line => {
+          if (!line.trim()) return;
+          const chip = document.createElement('span');
+          chip.className = 'chip chip-text';
+          chip.textContent = line.trim();
+          textChips.appendChild(chip);
+        });
+      }
+    }
+
+    // ========== Admin ==========
+    function adminLogin() {
+      if (document.getElementById('adminPw').value === ADMIN_PW) {
+        isAdmin = true;
+        closeModal('loginModal');
+        document.getElementById('adminBadge').style.display = 'inline-block';
+        document.getElementById('adminLoginBtn').style.display = 'none';
+        document.getElementById('adminLogoutBtn').style.display = 'block';
+        document.getElementById('addStockSection').style.display = 'block';
+        document.querySelectorAll('.admin-actions').forEach(el => el.classList.add('show'));
+        toast('เข้าสู่ระบบแอดมินสำเร็จ', 'success');
+      } else {
+        toast('รหัสผ่านไม่ถูกต้อง', 'error');
+        document.getElementById('adminPw').value = '';
+        document.getElementById('adminPw').focus();
+      }
+    }
+
+    function adminLogout() {
+      isAdmin = false;
+      document.getElementById('adminBadge').style.display = 'none';
+      document.getElementById('adminLoginBtn').style.display = 'block';
+      document.getElementById('adminLogoutBtn').style.display = 'none';
+      document.getElementById('addStockSection').style.display = 'none';
+      document.querySelectorAll('.admin-actions').forEach(el => el.classList.remove('show'));
+      toast('ออกจากระบบแล้ว');
+    }
+
+    // ========== Modal ==========
+    function showModal(id) { document.getElementById(id).classList.add('show'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+    function overlayClose(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+
+    // ========== Toast ==========
+    function toast(msg, type = '') {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'toast show ' + type;
+      setTimeout(() => el.classList.remove('show'), 3200);
+    }
+
+    // ========== Form Reset ==========
+    function resetRepairForm() {
+      document.getElementById('repairForm').reset();
+      document.getElementById('rCamPreview').style.display = 'none';
+      document.getElementById('rPhotoBox').style.display = 'flex';
+    }
+
+    function resetReqForm() {
+      document.getElementById('reqForm').reset();
+      document.getElementById('visionPreviewImg').style.display = 'none';
+      document.getElementById('detectedResult').style.display = 'none';
+      document.getElementById('visionAnalyzing').style.display = 'none';
+    }
+
+    // ========== Stock (GAS) ==========
+    async function loadStock() {
+      const grid = document.getElementById('stockGrid');
+      try {
+        const resp = await fetch(SCRIPT_URL + '?action=getStock');
+        const data = await resp.json();
+        if (data.success) { stockData = data.items || []; renderStock(stockData); }
+        else grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">❌</div><p>โหลดข้อมูลไม่ได้</p></div>';
+      } catch {
+        grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">📡</div><p>ไม่สามารถเชื่อมต่อได้</p></div>';
+      }
+    }
+
+    function renderStock(items) {
+      const grid = document.getElementById('stockGrid');
+      if (!items.length) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">📦</div><p>ยังไม่มีรายการสต็อก</p></div>'; return; }
+      grid.innerHTML = items.map(item => {
+        const n = parseInt(item.qty) || 0;
+        const cls = n <= 0 ? 'qty-out' : n <= 5 ? 'qty-low' : 'qty-ok';
+        const qLabel = n <= 0 ? 'หมด' : `${item.qty} ${item.unit || ''}`.trim();
+        const img = item.photoUrl
+          ? `<img src="${item.photoUrl}" alt="${item.name}" loading="lazy">`
+          : `<div style="width:100%;height:110px;display:flex;align-items:center;justify-content:center;font-size:36px">📦</div>`;
+        return `<div class="stock-item" onclick="showDetail('${item.id}')">
+          <div class="stock-item-img">${img}</div>
+          <div class="stock-item-body">
+            <div class="stock-item-name">${item.name}</div>
+            <div><span class="qty-badge ${cls}">${qLabel}</span></div>
+            <div class="admin-actions ${isAdmin ? 'show' : ''}" onclick="event.stopPropagation()">
+              <button class="btn-edit-sm" onclick="editStock('${item.id}')">แก้ไข</button>
+              <button class="btn-danger-sm" onclick="deleteStock('${item.id}')">ลบ</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function filterStock() {
+      const q = document.getElementById('stockSearch').value.toLowerCase();
+      renderStock(stockData.filter(i => i.name.toLowerCase().includes(q) || (i.category || '').toLowerCase().includes(q)));
+    }
+
+    function showDetail(id) {
+      const item = stockData.find(i => i.id === id);
+      if (!item) return;
+      const n = parseInt(item.qty) || 0;
+      const cls = n <= 0 ? 'qty-out' : n <= 5 ? 'qty-low' : 'qty-ok';
+      document.getElementById('detailTitle').textContent = item.name;
+      document.getElementById('detailBody').innerHTML = `
+        ${item.photoUrl ? `<img class="modal-img" src="${item.photoUrl}" alt="${item.name}">` : ''}
+        <div class="detail-row"><span class="detail-label">คงเหลือ</span><span class="detail-value"><span class="qty-badge ${cls}">${item.qty || 0} ${item.unit || ''}</span></span></div>
+        <div class="detail-row"><span class="detail-label">หมวดหมู่</span><span class="detail-value">${item.category || '-'}</span></div>
+        ${item.details ? `<div class="detail-row"><span class="detail-label">รายละเอียด</span><span class="detail-value">${item.details}</span></div>` : ''}
+        <div class="detail-row"><span class="detail-label">อัพเดทล่าสุด</span><span class="detail-value">${item.updatedAt || '-'}</span></div>`;
+      showModal('detailModal');
+    }
+
+    function toggleAddForm() {
+      const card = document.getElementById('addStockCard');
+      card.classList.toggle('show');
+      if (card.classList.contains('show')) card.scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+
+    async function submitAddStock(e) {
+      e.preventDefault();
+      const btn = document.getElementById('addStockBtn');
+      btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
+      try {
+        let base64 = '', filename = '';
+        const f = document.getElementById('s_photo').files[0];
+        if (f) { base64 = await compressToBase64(f); filename = f.name; }
+        const resp = await fetch(SCRIPT_URL, { method:'POST', body:JSON.stringify({
+          action:'addStock', name:document.getElementById('s_name').value.trim(),
+          qty:document.getElementById('s_qty').value, unit:document.getElementById('s_unit').value.trim(),
+          category:document.getElementById('s_cat').value, details:document.getElementById('s_details').value.trim(),
+          updatedAt:thaiNow(), photoBase64:base64, photoName:filename
+        })});
+        const data = await resp.json();
+        if (data.success) { toast('✅ เพิ่มรายการสำเร็จ', 'success'); document.getElementById('addStockForm').reset(); document.getElementById('sPhotoPreview').style.display = 'none'; document.getElementById('sPhotoBox').style.display = 'block'; toggleAddForm(); loadStock(); }
+        else toast('เกิดข้อผิดพลาด', 'error');
+      } catch { toast('ไม่สามารถเชื่อมต่อได้', 'error'); }
+      finally { btn.disabled = false; btn.textContent = 'บันทึก'; }
+    }
+
+    async function deleteStock(id) {
+      if (!confirm('ลบรายการนี้?')) return;
+      try {
+        const resp = await fetch(SCRIPT_URL, { method:'POST', body:JSON.stringify({ action:'deleteStock', id }) });
+        const data = await resp.json();
+        if (data.success) { toast('ลบแล้ว', 'success'); loadStock(); }
+        else toast('เกิดข้อผิดพลาด', 'error');
+      } catch { toast('เกิดข้อผิดพลาด', 'error'); }
+    }
+
+    function editStock(id) {
+      const item = stockData.find(i => i.id === id);
+      if (!item) return;
+      const newQty = prompt(`แก้ไขจำนวน "${item.name}" (ปัจจุบัน: ${item.qty} ${item.unit || ''}):`);
+      if (newQty === null) return;
+      fetch(SCRIPT_URL, { method:'POST', body:JSON.stringify({ action:'updateStock', id, qty:newQty, updatedAt:thaiNow() }) })
+        .then(r => r.json()).then(d => { if (d.success) { toast('✅ อัพเดทแล้ว', 'success'); loadStock(); } else toast('เกิดข้อผิดพลาด', 'error'); })
+        .catch(() => toast('เกิดข้อผิดพลาด', 'error'));
+    }
+
+    // ========== PWA ==========
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault(); deferredPrompt = e;
+      document.getElementById('installBanner').classList.add('show');
+    });
+    function installPWA() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById('installBanner').classList.remove('show'); });
+    }
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+      const sw = `const C='trr999-v2';self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))))});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const cl=resp.clone();caches.open(C).then(c=>c.put(e.request,cl));return resp})))})`;
+      const blob = new Blob([sw], { type:'application/javascript' });
+      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+    }
+
+    // Init saved data
+    renderSavedNames();
+    renderRecentVehicles();
+
+    // PWA Manifest
+    const mf = { name:'ธรารินทร์ 999 - ระบบแจ้งซ่อม', short_name:'TRR999', theme_color:'#1a3a6b', background_color:'#1a3a6b', display:'standalone', orientation:'portrait', start_url:'.', icons:[{ src:'TRR999logo.png', sizes:'512x512', type:'image/png', purpose:'any maskable' }] };
+    const ml = document.createElement('link'); ml.rel = 'manifest'; ml.href = 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(mf)); document.head.appendChild(ml);
+  </script>
+</body>
+</html>
