@@ -268,7 +268,32 @@
     .fb-status.connected{background:var(--green)}
     .fb-status.error{background:var(--red)}
 
-    @media(max-width:360px){.stock-grid{grid-template-columns:1fr}}
+    /* Stock stats */
+    .stock-stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+    .stock-stat-card{background:var(--blue);color:#fff;border-radius:var(--rs);padding:12px 14px}
+    .stock-stat-label{font-size:11px;font-weight:500;opacity:.75;margin-bottom:4px}
+    .stock-stat-num{font-size:26px;font-weight:700;line-height:1}
+    /* Stock table */
+    .stock-card-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--g100)}
+    .stock-card-title{font-size:15px;font-weight:700;color:var(--g900)}
+    .stock-card-sub{font-size:11px;color:var(--g400);margin-top:1px}
+    .stock-info-bar{background:#eff6ff;color:#1d4ed8;padding:10px 16px;font-size:13px;border-bottom:1px solid #bfdbfe}
+    .btn-admin-sm{background:transparent;border:1.5px solid var(--g300);color:var(--g700);padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Sarabun',sans-serif}
+    .btn-admin-sm:hover{border-color:var(--blue);color:var(--blue)}
+    .stock-table-wrap{overflow-x:auto}
+    .stock-table{width:100%;border-collapse:collapse}
+    .stock-table thead th{background:var(--blue);color:#fff;padding:10px 12px;text-align:left;font-size:13px;font-weight:600}
+    .stock-table td{padding:10px 12px;border-bottom:1px solid var(--g100);font-size:14px;vertical-align:middle}
+    .stock-table tr:last-child td{border-bottom:none}
+    .stock-table tbody tr:hover td{background:var(--g50);cursor:pointer}
+    .stock-thumb{width:44px;height:44px;object-fit:cover;border-radius:6px;display:block}
+    .stock-thumb-empty{width:44px;height:44px;background:var(--g100);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px}
+    .stock-qty-num{font-size:16px;font-weight:700;color:var(--g900);text-align:center}
+    .status-ok{display:inline-block;padding:3px 8px;background:#dcfce7;color:#15803d;border-radius:20px;font-size:12px;font-weight:600}
+    .status-low{display:inline-block;padding:3px 8px;background:#fef9c3;color:#ca8a04;border-radius:20px;font-size:12px;font-weight:600}
+    .status-out{display:inline-block;padding:3px 8px;background:#fee2e2;color:#dc2626;border-radius:20px;font-size:12px;font-weight:600}
+    .stock-row-actions{display:none;gap:6px;margin-top:6px}
+    .stock-row-actions.show{display:flex}
   </style>
 </head>
 <body>
@@ -459,15 +484,23 @@
 
     <!-- ===== TAB: สต็อก ===== -->
     <div id="tab-stock" class="tab-panel">
-      <div class="admin-bar">
-        <span class="admin-badge" id="adminBadge" style="display:none">👑 แอดมิน</span>
-        <button class="btn btn-sm btn-outline" id="adminLoginBtn" onclick="showModal('loginModal')" style="margin-left:auto">🔐 เข้าสู่ระบบ</button>
-        <button class="btn btn-sm btn-outline" id="adminLogoutBtn" onclick="adminLogout()" style="display:none;margin-left:auto">ออกจากระบบ</button>
+      <!-- Stats row -->
+      <div class="stock-stats-row">
+        <div class="stock-stat-card">
+          <div class="stock-stat-label">รายการทั้งหมด</div>
+          <div class="stock-stat-num" id="statTotal">—</div>
+        </div>
+        <div class="stock-stat-card" style="background:var(--gold-d)">
+          <div class="stock-stat-label">สต็อกต่ำ</div>
+          <div class="stock-stat-num" id="statLow">—</div>
+        </div>
+        <div class="stock-stat-card">
+          <div class="stock-stat-label">เบิกวันนี้</div>
+          <div class="stock-stat-num" id="statToday">0</div>
+        </div>
       </div>
-      <div id="addStockSection" style="display:none;margin-bottom:16px">
-        <button class="btn btn-gold" onclick="toggleAddForm()">+ เพิ่มรายการสต็อก</button>
-      </div>
-      <div class="card add-stock-card" id="addStockCard">
+      <!-- Add form (admin) -->
+      <div class="card add-stock-card" id="addStockCard" style="margin-bottom:14px">
         <div class="card-title">เพิ่มรายการสต็อก</div>
         <form id="addStockForm" onsubmit="submitAddStock(event)">
           <div class="fg"><label>ชื่ออุปกรณ์ <span class="req">*</span></label><input type="text" id="s_name" required></div>
@@ -485,11 +518,35 @@
           </div>
         </form>
       </div>
-      <div class="card" style="padding:12px 16px;margin-bottom:12px">
-        <input type="text" id="stockSearch" placeholder="🔍 ค้นหาอุปกรณ์..." oninput="filterStock()" style="border:none;background:none;padding:4px 0;font-size:15px;width:100%;outline:none">
-      </div>
-      <div id="stockGrid" class="stock-grid">
-        <div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">📦</div><p>กำลังโหลด...</p></div>
+      <!-- Table card -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="stock-card-hdr">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:36px;height:36px;background:rgba(240,165,0,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px">📋</div>
+            <div>
+              <div class="stock-card-title">รายการอุปกรณ์คงเหลือ</div>
+              <div class="stock-card-sub">ข้อมูลจาก Google Sheets</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="admin-badge" id="adminBadge" style="display:none">👑 แอดมิน</span>
+            <button class="btn-admin-sm" id="adminLoginBtn" onclick="showModal('loginModal')">🔒 แอดมิน</button>
+            <button class="btn-admin-sm" id="adminLogoutBtn" onclick="adminLogout()" style="display:none">ออกจากระบบ</button>
+          </div>
+        </div>
+        <div class="stock-info-bar" id="stockInfoBar">👁 โหมดดูเท่านั้น — เข้าสู่ระบบแอดมินเพื่อจัดการสต็อก</div>
+        <div id="addStockSection" style="display:none;padding:12px 16px;border-bottom:1px solid var(--g100)">
+          <button class="btn btn-gold" onclick="toggleAddForm()">+ เพิ่มรายการสต็อก</button>
+        </div>
+        <div style="padding:10px 16px;border-bottom:1px solid var(--g100)">
+          <input type="text" id="stockSearch" placeholder="🔍 ค้นหาอุปกรณ์..." oninput="filterStock()" style="border:none;background:none;font-size:15px;width:100%;outline:none;font-family:'Sarabun',sans-serif">
+        </div>
+        <div class="stock-table-wrap">
+          <table class="stock-table">
+            <thead><tr><th style="width:60px">รูป</th><th>อุปกรณ์</th><th style="width:60px">หน่วย</th><th style="width:65px;text-align:center">คงเหลือ</th><th style="width:75px;text-align:center">สถานะ</th></tr></thead>
+            <tbody id="stockGrid"><tr><td colspan="5" style="text-align:center;padding:30px;color:var(--g400)">กำลังโหลด...</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -986,7 +1043,8 @@
         document.getElementById('adminLoginBtn').style.display = 'none';
         document.getElementById('adminLogoutBtn').style.display = 'block';
         document.getElementById('addStockSection').style.display = 'block';
-        document.querySelectorAll('.admin-actions').forEach(el => el.classList.add('show'));
+        document.getElementById('stockInfoBar').style.display = 'none';
+        document.querySelectorAll('.admin-actions,.stock-row-actions').forEach(el => el.classList.add('show'));
         toast('เข้าสู่ระบบแอดมินสำเร็จ', 'success');
       } else {
         toast('รหัสผ่านไม่ถูกต้อง', 'error');
@@ -1001,7 +1059,8 @@
       document.getElementById('adminLoginBtn').style.display = 'block';
       document.getElementById('adminLogoutBtn').style.display = 'none';
       document.getElementById('addStockSection').style.display = 'none';
-      document.querySelectorAll('.admin-actions').forEach(el => el.classList.remove('show'));
+      document.getElementById('stockInfoBar').style.display = 'block';
+      document.querySelectorAll('.admin-actions,.stock-row-actions').forEach(el => el.classList.remove('show'));
       toast('ออกจากระบบแล้ว');
     }
 
@@ -1034,39 +1093,44 @@
 
     // ========== Stock (GAS) ==========
     async function loadStock() {
-      const grid = document.getElementById('stockGrid');
+      const tbody = document.getElementById('stockGrid');
       try {
         const resp = await fetch(SCRIPT_URL + '?action=getStock');
         const data = await resp.json();
-        if (data.success) { stockData = data.items || []; renderStock(stockData); }
-        else grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">❌</div><p>โหลดข้อมูลไม่ได้</p></div>';
+        if (data.success) { stockData = data.items || []; renderStock(stockData); updateStockStats(stockData); }
+        else tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--g400)">❌ โหลดข้อมูลไม่ได้</td></tr>';
       } catch {
-        grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">📡</div><p>ไม่สามารถเชื่อมต่อได้</p></div>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--g400)">📡 ไม่สามารถเชื่อมต่อได้</td></tr>';
       }
     }
 
     function renderStock(items) {
-      const grid = document.getElementById('stockGrid');
-      if (!items.length) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">📦</div><p>ยังไม่มีรายการสต็อก</p></div>'; return; }
-      grid.innerHTML = items.map(item => {
+      const tbody = document.getElementById('stockGrid');
+      if (!items.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--g400)"><div style="font-size:36px;margin-bottom:8px">📦</div><div>ยังไม่มีรายการสต็อก</div></td></tr>'; return; }
+      tbody.innerHTML = items.map(item => {
         const n = parseInt(item.qty) || 0;
-        const cls = n <= 0 ? 'qty-out' : n <= 5 ? 'qty-low' : 'qty-ok';
-        const qLabel = n <= 0 ? 'หมด' : `${item.qty} ${item.unit || ''}`.trim();
+        const sCls = n <= 0 ? 'status-out' : n <= 2 ? 'status-low' : 'status-ok';
+        const sTxt = n <= 0 ? 'หมด' : n <= 2 ? 'ต่ำ' : 'ปกติ';
         const img = item.photoUrl
-          ? `<img src="${item.photoUrl}" alt="${item.name}" loading="lazy">`
-          : `<div style="width:100%;height:110px;display:flex;align-items:center;justify-content:center;font-size:36px">📦</div>`;
-        return `<div class="stock-item" onclick="showDetail('${item.id}')">
-          <div class="stock-item-img">${img}</div>
-          <div class="stock-item-body">
-            <div class="stock-item-name">${item.name}</div>
-            <div><span class="qty-badge ${cls}">${qLabel}</span></div>
-            <div class="admin-actions ${isAdmin ? 'show' : ''}" onclick="event.stopPropagation()">
-              <button class="btn-edit-sm" onclick="editStock('${item.id}')">แก้ไข</button>
-              <button class="btn-danger-sm" onclick="deleteStock('${item.id}')">ลบ</button>
-            </div>
-          </div>
+          ? `<img class="stock-thumb" src="${item.photoUrl}" alt="${item.name}" loading="lazy">`
+          : `<div class="stock-thumb-empty">📦</div>`;
+        const adminBtns = `<div class="stock-row-actions ${isAdmin ? 'show' : ''}" onclick="event.stopPropagation()">
+          <button class="btn-edit-sm" onclick="editStock('${item.id}')">แก้ไข</button>
+          <button class="btn-danger-sm" onclick="deleteStock('${item.id}')">ลบ</button>
         </div>`;
+        return `<tr onclick="showDetail('${item.id}')">
+          <td>${img}</td>
+          <td><div class="stock-item-name">${item.name}</div>${adminBtns}</td>
+          <td style="color:var(--g500);font-size:13px">${item.unit || ''}</td>
+          <td class="stock-qty-num">${item.qty}</td>
+          <td style="text-align:center"><span class="${sCls}">${sTxt}</span></td>
+        </tr>`;
       }).join('');
+    }
+
+    function updateStockStats(items) {
+      document.getElementById('statTotal').textContent = items.length;
+      document.getElementById('statLow').textContent = items.filter(i => (parseInt(i.qty) || 0) <= 2).length;
     }
 
     function filterStock() {
