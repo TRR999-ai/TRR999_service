@@ -1,7 +1,7 @@
 // ===== CONFIG =====
 const SHEET_ID      = '1cXWyZyVm5fwhbIVGnGStmrVU1jxBwin1iIq2qPdI3UQ';
-const FOLDER_REPAIR = ''; // Drive Folder ID สำหรับรูปแจ้งซ่อม (ว่าง = root)
-const FOLDER_STOCK  = ''; // Drive Folder ID สำหรับรูปสต็อก (ว่าง = root)
+const FOLDER_REPAIR = '1UXG1qpZ9_StTT48NQ4MGVwn0FYkxR4EH'; // Drive Folder ID สำหรับรูปแจ้งซ่อม
+const FOLDER_STOCK  = '18fDCaJQaPW6xsjPoJ02Kg84-71IjlxgE'; // Drive Folder ID สำหรับรูปสต็อก
 
 const SHEET_STOCK = 'สต็อก';
 
@@ -157,9 +157,10 @@ function analyzeImage(p) {
 // ===== parseQuantities — ดึงจำนวน+หน่วยจาก OCR text =====
 function parseQuantities(text) {
   if (!text) return [];
-  const pattern = /(\d+(?:\.\d+)?)\s*(ชิ้น|อัน|กล่อง|แกลลอน|ลิตร|กระปุก|ถุง|แผ่น|ม้วน|โหล|คู่|ชุด|หลอด|กระป๋อง|ml|ML|L(?!\w)|kg|KG|g(?!\w)|G(?!\w)|m(?!\w)|cm|mm)/g;
-  const results = [];
-  let match;
+  var units = 'ชิ้น|อัน|กล่อง|แกลลอน|ลิตร|กระปุก|ถุง|แผ่น|ม้วน|โหล|คู่|ชุด|หลอด|กระป๋อง|ml|ML|L|kg|KG|g|G|m|cm|mm';
+  var pattern = new RegExp('(\\d+(?:\\.\\d+)?)\\s*(' + units + ')', 'g');
+  var results = [];
+  var match;
   while ((match = pattern.exec(text)) !== null) {
     results.push({ amount: match[1], unit: match[2] });
   }
