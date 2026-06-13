@@ -484,10 +484,7 @@
     try {
       firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
-      // Test connection
-      db.collection('_ping').limit(1).get()
-        .then(() => setFbStatus('connected'))
-        .catch(() => setFbStatus('error'));
+      setFbStatus('connected');
     } catch(e) {
       setFbStatus('error');
     }
