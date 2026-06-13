@@ -325,10 +325,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
         เบิกอุปกรณ์
       </button>
-      <button class="tab-btn" id="tab-btn-stock" onclick="switchTab('stock',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-        สต็อกอุปกรณ์
-      </button>
     </nav>
   </header>
 
@@ -403,44 +399,14 @@
     <!-- ===== TAB: เบิกอุปกรณ์ ===== -->
     <div id="tab-req" class="tab-panel">
       <div id="reqConnPill" class="conn-pill wait"><span class="conn-dot"></span> กำลังเชื่อมต่อ...</div>
-
-      <!-- Vision Camera Section -->
-      <div class="vision-card">
-        <div class="vision-title">
-          🤖 AI detect ของจากรูปภาพ
-          <span style="font-size:11px;color:var(--g400);font-weight:400">ถ่ายรูป → autofill ฟอร์ม</span>
-        </div>
-        <div class="vision-cam-btn" onclick="triggerVisionCamera()">
-          <input type="file" id="q_vision_file" accept="image/*" capture="environment"
-                 onchange="analyzeVisionImage(this)" style="z-index:1">
-          <span style="font-size:20px">📸</span>
-          <span>ถ่ายรูปของที่จะเบิก</span>
-        </div>
-        <img id="visionPreviewImg" class="vision-img-preview" src="" alt="">
-        <div class="vision-analyzing" id="visionAnalyzing" style="display:none">
-          <div class="spinner-dark"></div>
-          <p>กำลังวิเคราะห์รูปภาพ...</p>
-        </div>
-        <div class="detected-result" id="detectedResult">
-          <div class="detected-label">🔍 พบวัตถุ — กดเลือกเพื่อกรอกอัตโนมัติ</div>
-          <div class="chips" id="itemChips"></div>
-          <div class="detected-label">📦 จำนวนที่พบ</div>
-          <div class="chips" id="qtyChips"></div>
-          <div id="rawTextBox" style="display:none">
-            <div class="detected-label">📝 ข้อความในรูป</div>
-            <div class="chips" id="textChips"></div>
-          </div>
-        </div>
-      </div>
-
       <div class="card">
         <div class="card-head">
           <div class="card-icon card-icon-green">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
           </div>
           <div class="card-head-text">
-            <h2>เบิกอุปกรณ์ซ่อม</h2>
-            <p>ตัดยอดสต็อกอัตโนมัติ</p>
+            <h2>เบิกอุปกรณ์</h2>
+            <p>ข้อมูลจะบันทึกลง Firebase ทันที</p>
           </div>
         </div>
         <form id="reqForm" onsubmit="submitRequisition(event)">
@@ -459,94 +425,24 @@
             <div class="recent-list" id="qRecentVehicles"></div>
           </div>
           <div class="fg">
-            <label>ชื่ออุปกรณ์ / วัสดุ <span class="req">*</span></label>
-            <input type="text" id="q_name" placeholder="เช่น น้ำมันเครื่อง, ยางอะไหล่"
-                   autocomplete="off" required>
-          </div>
-          <div class="form-row fg">
-            <div>
-              <label>จำนวน <span class="req">*</span></label>
-              <input type="number" id="q_qty" placeholder="0" min="1"
-                     inputmode="numeric" required>
-            </div>
-            <div>
-              <label>หน่วย</label>
-              <input type="text" id="q_unit" placeholder="ลิตร / ชิ้น / กล่อง">
-            </div>
+            <label>รายการที่เบิก <span class="req">*</span></label>
+            <textarea id="q_desc" placeholder="ระบุรายการและจำนวนที่ต้องการเบิก เช่น&#10;• น้ำมันเครื่อง 5 ลิตร&#10;• กรองอากาศ 1 ชิ้น" required style="min-height:100px"></textarea>
           </div>
           <div class="fg">
-            <label>วัตถุประสงค์ (ถ้ามี)</label>
-            <textarea id="q_purpose" placeholder="ใช้สำหรับ..." style="min-height:80px"></textarea>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- ===== TAB: สต็อก ===== -->
-    <div id="tab-stock" class="tab-panel">
-      <!-- Stats row -->
-      <div class="stock-stats-row">
-        <div class="stock-stat-card">
-          <div class="stock-stat-label">รายการทั้งหมด</div>
-          <div class="stock-stat-num" id="statTotal">—</div>
-        </div>
-        <div class="stock-stat-card" style="background:var(--gold-d)">
-          <div class="stock-stat-label">สต็อกต่ำ</div>
-          <div class="stock-stat-num" id="statLow">—</div>
-        </div>
-        <div class="stock-stat-card">
-          <div class="stock-stat-label">เบิกวันนี้</div>
-          <div class="stock-stat-num" id="statToday">0</div>
-        </div>
-      </div>
-      <!-- Add form (admin) -->
-      <div class="card add-stock-card" id="addStockCard" style="margin-bottom:14px">
-        <div class="card-title">เพิ่มรายการสต็อก</div>
-        <form id="addStockForm" onsubmit="submitAddStock(event)">
-          <div class="fg"><label>ชื่ออุปกรณ์ <span class="req">*</span></label><input type="text" id="s_name" required></div>
-          <div class="fg"><label>จำนวน <span class="req">*</span></label><div style="display:flex;gap:8px"><input type="number" id="s_qty" min="0" required style="width:120px"><input type="text" id="s_unit" placeholder="หน่วย"></div></div>
-          <div class="fg"><label>หมวดหมู่</label><select id="s_cat"><option>ทั่วไป</option><option>น้ำมัน/สารหล่อลื่น</option><option>ยาง/ล้อ</option><option>เครื่องยนต์</option><option>ไฟฟ้า</option><option>เครื่องมือ</option></select></div>
-          <div class="fg"><label>รายละเอียด</label><textarea id="s_details" placeholder="ข้อมูลเพิ่มเติม..."></textarea></div>
-          <div class="fg">
-            <label>รูปภาพ</label>
-            <div class="photo-upload" id="sPhotoBox"><input type="file" id="s_photo" accept="image/*" onchange="previewPhoto(this,'sPhotoPreview','sPhotoBox')"><div class="photo-upload-icon">🖼️</div><div class="photo-upload-text">แตะเพื่อเลือกรูป</div></div>
-            <div class="photo-preview" id="sPhotoPreview"><img src="" alt=""></div>
-          </div>
-          <div style="display:flex;gap:8px">
-            <button type="submit" class="btn btn-gold" id="addStockBtn" style="flex:1">บันทึก</button>
-            <button type="button" class="btn btn-outline" onclick="toggleAddForm()" style="width:auto;padding:14px 20px">ยกเลิก</button>
-          </div>
-        </form>
-      </div>
-      <!-- Table card -->
-      <div class="card" style="padding:0;overflow:hidden">
-        <div class="stock-card-hdr">
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="width:36px;height:36px;background:rgba(240,165,0,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px">📋</div>
-            <div>
-              <div class="stock-card-title">รายการอุปกรณ์คงเหลือ</div>
-              <div class="stock-card-sub">ข้อมูลจาก Google Sheets</div>
+            <label>ถ่ายรูปประกอบ</label>
+            <div class="camera-btn" id="qPhotoBox">
+              <input type="file" id="q_photo" accept="image/*" capture="environment"
+                     onchange="handleCamera(this,'qCamPreview','qPhotoBox')">
+              <div class="camera-btn-icon">📷</div>
+              <div class="camera-btn-text">ถ่ายรูปหรือเลือกจากคลัง</div>
+              <div class="camera-btn-sub">ถ่ายรูปของที่จะเบิก</div>
+            </div>
+            <div class="camera-preview" id="qCamPreview">
+              <img src="" alt="">
+              <button type="button" class="camera-remove" onclick="removePhoto('q_photo','qCamPreview','qPhotoBox')">✕</button>
             </div>
           </div>
-          <div style="display:flex;align-items:center;gap:6px">
-            <span class="admin-badge" id="adminBadge" style="display:none">👑 แอดมิน</span>
-            <button class="btn-admin-sm" id="adminLoginBtn" onclick="showModal('loginModal')">🔒 แอดมิน</button>
-            <button class="btn-admin-sm" id="adminLogoutBtn" onclick="adminLogout()" style="display:none">ออกจากระบบ</button>
-          </div>
-        </div>
-        <div class="stock-info-bar" id="stockInfoBar">👁 โหมดดูเท่านั้น — เข้าสู่ระบบแอดมินเพื่อจัดการสต็อก</div>
-        <div id="addStockSection" style="display:none;padding:12px 16px;border-bottom:1px solid var(--g100)">
-          <button class="btn btn-gold" onclick="toggleAddForm()">+ เพิ่มรายการสต็อก</button>
-        </div>
-        <div style="padding:10px 16px;border-bottom:1px solid var(--g100)">
-          <input type="text" id="stockSearch" placeholder="🔍 ค้นหาอุปกรณ์..." oninput="filterStock()" style="border:none;background:none;font-size:15px;width:100%;outline:none;font-family:'Sarabun',sans-serif">
-        </div>
-        <div class="stock-table-wrap">
-          <table class="stock-table">
-            <thead><tr><th style="width:60px">รูป</th><th>อุปกรณ์</th><th style="width:60px">หน่วย</th><th style="width:65px;text-align:center">คงเหลือ</th><th style="width:75px;text-align:center">สถานะ</th></tr></thead>
-            <tbody id="stockGrid"><tr><td colspan="5" style="text-align:center;padding:30px;color:var(--g400)">กำลังโหลด...</td></tr></tbody>
-          </table>
-        </div>
+        </form>
       </div>
     </div>
 
@@ -564,24 +460,6 @@
     <button type="submit" form="reqForm" class="btn btn-submit-gold" id="qSubmitBtn">ส่งใบเบิก →</button>
   </div>
 
-  <!-- Login Modal -->
-  <div class="modal-overlay" id="loginModal" onclick="overlayClose(event,'loginModal')">
-    <div class="modal">
-      <div class="modal-header"><div class="modal-title">🔐 เข้าสู่ระบบแอดมิน</div><button class="modal-close" onclick="closeModal('loginModal')">✕</button></div>
-      <div class="modal-body">
-        <div class="fg"><label>รหัสผ่าน</label><input type="password" id="adminPw" placeholder="กรอกรหัสผ่าน" onkeydown="if(event.key==='Enter')adminLogin()"></div>
-        <button class="btn btn-primary" onclick="adminLogin()">เข้าสู่ระบบ</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Stock Detail Modal -->
-  <div class="modal-overlay" id="detailModal" onclick="overlayClose(event,'detailModal')">
-    <div class="modal">
-      <div class="modal-header"><div class="modal-title" id="detailTitle">รายละเอียด</div><button class="modal-close" onclick="closeModal('detailModal')">✕</button></div>
-      <div class="modal-body" id="detailBody"></div>
-    </div>
-  </div>
 
   <div class="toast" id="toast"></div>
 
@@ -626,12 +504,8 @@
     }
 
     // ========== State ==========
-    let isAdmin = false;
-    let stockData = [];
     let urgency = '';
     let deferredPrompt = null;
-    let selectedItemName = '';
-    let selectedQtyValue = '';
 
     // ========== Time ==========
     function updateTime() {
@@ -653,7 +527,6 @@
       // show/hide sticky bars
       document.getElementById('stickyRepair').style.display = name === 'repair' ? 'flex' : 'none';
       document.getElementById('stickyReq').style.display   = name === 'req'    ? 'flex' : 'none';
-      if (name === 'stock') loadStock();
     }
 
     // ========== localStorage: saved names + vehicles ==========
@@ -865,28 +738,24 @@
       const uuid = genUUID();
       const data = {
         uuid,
-        datetime:   thaiNow(),
-        createdAt:  firebase.firestore.FieldValue.serverTimestamp(),
-        requester:  document.getElementById('q_requester').value.trim(),
-        vehicle:    document.getElementById('q_vehicle').value.trim(),
-        equipName:  document.getElementById('q_name').value.trim(),
-        qty:        document.getElementById('q_qty').value,
-        unit:       document.getElementById('q_unit').value.trim(),
-        department: document.getElementById('q_dept').value,
-        purpose:    document.getElementById('q_purpose').value.trim(),
-        photoUrl:   '',
-        status:     'รออนุมัติ'
+        datetime:    thaiNow(),
+        createdAt:   firebase.firestore.FieldValue.serverTimestamp(),
+        requester:   document.getElementById('q_requester').value.trim(),
+        vehicle:     document.getElementById('q_vehicle').value.trim(),
+        description: document.getElementById('q_desc').value.trim(),
+        photoUrl:    '',
+        status:      'รออนุมัติ'
       };
 
       try {
-        const visionFile = document.getElementById('q_vision_file').files[0];
+        const photoFile = document.getElementById('q_photo').files[0];
         const docRef = await db.collection('requisitions').add(data);
-        showSuccess('ส่งใบเบิกสำเร็จ!', `${data.equipName} ${data.qty} ${data.unit} · ${data.requester}`);
+        showSuccess('ส่งใบเบิกสำเร็จ!', `${data.requester} · ${data.vehicle}`);
         resetReqForm();
         btn.disabled = false;
         btn.textContent = 'ส่งใบเบิก →';
 
-        syncAndClean('requisitions', docRef.id, data, visionFile || null);
+        syncAndClean('requisitions', docRef.id, data, photoFile || null);
 
       } catch (err) {
         toast('เกิดข้อผิดพลาด: ' + err.message, 'error');
@@ -927,143 +796,6 @@
       }
     }
 
-    // ========== Vision API ==========
-    function triggerVisionCamera() {
-      document.getElementById('q_vision_file').click();
-    }
-
-    async function analyzeVisionImage(input) {
-      const file = input.files[0];
-      if (!file) return;
-
-      // Show image preview
-      const reader = new FileReader();
-      reader.onload = e => {
-        const img = document.getElementById('visionPreviewImg');
-        img.src = e.target.result;
-        img.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
-
-      // Show analyzing
-      document.getElementById('visionAnalyzing').style.display = 'flex';
-      document.getElementById('detectedResult').style.display = 'none';
-
-      try {
-        const base64 = await compressToBase64(file);
-        const resp = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'analyzeImage', imageBase64: base64 })
-        });
-        const data = await resp.json();
-
-        document.getElementById('visionAnalyzing').style.display = 'none';
-
-        if (data.success) {
-          showVisionResults(data);
-        } else {
-          toast('วิเคราะห์รูปไม่ได้: ' + (data.error || '?'), 'error');
-        }
-      } catch (err) {
-        document.getElementById('visionAnalyzing').style.display = 'none';
-        toast('ไม่สามารถเชื่อมต่อได้', 'error');
-      }
-    }
-
-    function showVisionResults(data) {
-      const result = document.getElementById('detectedResult');
-      result.style.display = 'block';
-
-      // Object chips
-      const itemChips = document.getElementById('itemChips');
-      itemChips.innerHTML = '';
-      const items = [...(data.objects || []), ...(data.labels || [])];
-      const uniqueItems = [...new Map(items.map(i => [i.name, i])).values()].slice(0, 8);
-
-      if (uniqueItems.length === 0) {
-        itemChips.innerHTML = '<span style="font-size:13px;color:var(--g400)">ไม่พบวัตถุในรูป</span>';
-      } else {
-        uniqueItems.forEach(item => {
-          const chip = document.createElement('button');
-          chip.type = 'button';
-          chip.className = 'chip chip-item';
-          chip.textContent = `${item.name} ${item.confidence ? item.confidence+'%' : ''}`;
-          chip.onclick = () => {
-            document.querySelectorAll('.chip-item').forEach(c => c.classList.remove('selected'));
-            chip.classList.add('selected');
-            document.getElementById('q_name').value = item.name;
-          };
-          itemChips.appendChild(chip);
-        });
-      }
-
-      // Quantity chips
-      const qtyChips = document.getElementById('qtyChips');
-      qtyChips.innerHTML = '';
-      if (data.quantities && data.quantities.length > 0) {
-        data.quantities.forEach(q => {
-          const chip = document.createElement('button');
-          chip.type = 'button';
-          chip.className = 'chip chip-qty';
-          chip.textContent = `${q.amount} ${q.unit}`;
-          chip.onclick = () => {
-            document.querySelectorAll('.chip-qty').forEach(c => c.classList.remove('selected'));
-            chip.classList.add('selected');
-            document.getElementById('q_qty').value = q.amount;
-            document.getElementById('q_unit').value = q.unit;
-          };
-          qtyChips.appendChild(chip);
-        });
-      } else {
-        qtyChips.innerHTML = '<span style="font-size:13px;color:var(--g400)">ไม่พบตัวเลขจำนวน</span>';
-      }
-
-      // Raw text (collapsed)
-      if (data.text && data.text.trim()) {
-        const rawBox = document.getElementById('rawTextBox');
-        rawBox.style.display = 'block';
-        const textChips = document.getElementById('textChips');
-        textChips.innerHTML = '';
-        data.text.trim().split('\n').slice(0, 5).forEach(line => {
-          if (!line.trim()) return;
-          const chip = document.createElement('span');
-          chip.className = 'chip chip-text';
-          chip.textContent = line.trim();
-          textChips.appendChild(chip);
-        });
-      }
-    }
-
-    // ========== Admin ==========
-    function adminLogin() {
-      if (document.getElementById('adminPw').value === ADMIN_PW) {
-        isAdmin = true;
-        closeModal('loginModal');
-        document.getElementById('adminBadge').style.display = 'inline-block';
-        document.getElementById('adminLoginBtn').style.display = 'none';
-        document.getElementById('adminLogoutBtn').style.display = 'block';
-        document.getElementById('addStockSection').style.display = 'block';
-        document.getElementById('stockInfoBar').style.display = 'none';
-        document.querySelectorAll('.admin-actions,.stock-row-actions').forEach(el => el.classList.add('show'));
-        toast('เข้าสู่ระบบแอดมินสำเร็จ', 'success');
-      } else {
-        toast('รหัสผ่านไม่ถูกต้อง', 'error');
-        document.getElementById('adminPw').value = '';
-        document.getElementById('adminPw').focus();
-      }
-    }
-
-    function adminLogout() {
-      isAdmin = false;
-      document.getElementById('adminBadge').style.display = 'none';
-      document.getElementById('adminLoginBtn').style.display = 'block';
-      document.getElementById('adminLogoutBtn').style.display = 'none';
-      document.getElementById('addStockSection').style.display = 'none';
-      document.getElementById('stockInfoBar').style.display = 'block';
-      document.querySelectorAll('.admin-actions,.stock-row-actions').forEach(el => el.classList.remove('show'));
-      toast('ออกจากระบบแล้ว');
-    }
-
     // ========== Modal ==========
     function showModal(id) { document.getElementById(id).classList.add('show'); }
     function closeModal(id) { document.getElementById(id).classList.remove('show'); }
@@ -1086,118 +818,8 @@
 
     function resetReqForm() {
       document.getElementById('reqForm').reset();
-      document.getElementById('visionPreviewImg').style.display = 'none';
-      document.getElementById('detectedResult').style.display = 'none';
-      document.getElementById('visionAnalyzing').style.display = 'none';
-    }
-
-    // ========== Stock (GAS) ==========
-    async function loadStock() {
-      const tbody = document.getElementById('stockGrid');
-      try {
-        const resp = await fetch(SCRIPT_URL + '?action=getStock');
-        const data = await resp.json();
-        if (data.success) { stockData = data.items || []; renderStock(stockData); updateStockStats(stockData); }
-        else tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--g400)">❌ โหลดข้อมูลไม่ได้</td></tr>';
-      } catch {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--g400)">📡 ไม่สามารถเชื่อมต่อได้</td></tr>';
-      }
-    }
-
-    function renderStock(items) {
-      const tbody = document.getElementById('stockGrid');
-      if (!items.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--g400)"><div style="font-size:36px;margin-bottom:8px">📦</div><div>ยังไม่มีรายการสต็อก</div></td></tr>'; return; }
-      tbody.innerHTML = items.map(item => {
-        const n = parseInt(item.qty) || 0;
-        const sCls = n <= 0 ? 'status-out' : n <= 2 ? 'status-low' : 'status-ok';
-        const sTxt = n <= 0 ? 'หมด' : n <= 2 ? 'ต่ำ' : 'ปกติ';
-        const img = item.photoUrl
-          ? `<img class="stock-thumb" src="${item.photoUrl}" alt="${item.name}" loading="lazy">`
-          : `<div class="stock-thumb-empty">📦</div>`;
-        const adminBtns = `<div class="stock-row-actions ${isAdmin ? 'show' : ''}" onclick="event.stopPropagation()">
-          <button class="btn-edit-sm" onclick="editStock('${item.id}')">แก้ไข</button>
-          <button class="btn-danger-sm" onclick="deleteStock('${item.id}')">ลบ</button>
-        </div>`;
-        return `<tr onclick="showDetail('${item.id}')">
-          <td>${img}</td>
-          <td><div class="stock-item-name">${item.name}</div>${adminBtns}</td>
-          <td style="color:var(--g500);font-size:13px">${item.unit || ''}</td>
-          <td class="stock-qty-num">${item.qty}</td>
-          <td style="text-align:center"><span class="${sCls}">${sTxt}</span></td>
-        </tr>`;
-      }).join('');
-    }
-
-    function updateStockStats(items) {
-      document.getElementById('statTotal').textContent = items.length;
-      document.getElementById('statLow').textContent = items.filter(i => (parseInt(i.qty) || 0) <= 2).length;
-    }
-
-    function filterStock() {
-      const q = document.getElementById('stockSearch').value.toLowerCase();
-      renderStock(stockData.filter(i => i.name.toLowerCase().includes(q) || (i.category || '').toLowerCase().includes(q)));
-    }
-
-    function showDetail(id) {
-      const item = stockData.find(i => i.id === id);
-      if (!item) return;
-      const n = parseInt(item.qty) || 0;
-      const cls = n <= 0 ? 'qty-out' : n <= 5 ? 'qty-low' : 'qty-ok';
-      document.getElementById('detailTitle').textContent = item.name;
-      document.getElementById('detailBody').innerHTML = `
-        ${item.photoUrl ? `<img class="modal-img" src="${item.photoUrl}" alt="${item.name}">` : ''}
-        <div class="detail-row"><span class="detail-label">คงเหลือ</span><span class="detail-value"><span class="qty-badge ${cls}">${item.qty || 0} ${item.unit || ''}</span></span></div>
-        <div class="detail-row"><span class="detail-label">หมวดหมู่</span><span class="detail-value">${item.category || '-'}</span></div>
-        ${item.details ? `<div class="detail-row"><span class="detail-label">รายละเอียด</span><span class="detail-value">${item.details}</span></div>` : ''}
-        <div class="detail-row"><span class="detail-label">อัพเดทล่าสุด</span><span class="detail-value">${item.updatedAt || '-'}</span></div>`;
-      showModal('detailModal');
-    }
-
-    function toggleAddForm() {
-      const card = document.getElementById('addStockCard');
-      card.classList.toggle('show');
-      if (card.classList.contains('show')) card.scrollIntoView({ behavior:'smooth', block:'start' });
-    }
-
-    async function submitAddStock(e) {
-      e.preventDefault();
-      const btn = document.getElementById('addStockBtn');
-      btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
-      try {
-        let base64 = '', filename = '';
-        const f = document.getElementById('s_photo').files[0];
-        if (f) { base64 = await compressToBase64(f); filename = f.name; }
-        const resp = await fetch(SCRIPT_URL, { method:'POST', body:JSON.stringify({
-          action:'addStock', name:document.getElementById('s_name').value.trim(),
-          qty:document.getElementById('s_qty').value, unit:document.getElementById('s_unit').value.trim(),
-          category:document.getElementById('s_cat').value, details:document.getElementById('s_details').value.trim(),
-          updatedAt:thaiNow(), photoBase64:base64, photoName:filename
-        })});
-        const data = await resp.json();
-        if (data.success) { toast('✅ เพิ่มรายการสำเร็จ', 'success'); document.getElementById('addStockForm').reset(); document.getElementById('sPhotoPreview').style.display = 'none'; document.getElementById('sPhotoBox').style.display = 'block'; toggleAddForm(); loadStock(); }
-        else toast('เกิดข้อผิดพลาด', 'error');
-      } catch { toast('ไม่สามารถเชื่อมต่อได้', 'error'); }
-      finally { btn.disabled = false; btn.textContent = 'บันทึก'; }
-    }
-
-    async function deleteStock(id) {
-      if (!confirm('ลบรายการนี้?')) return;
-      try {
-        const resp = await fetch(SCRIPT_URL, { method:'POST', body:JSON.stringify({ action:'deleteStock', id }) });
-        const data = await resp.json();
-        if (data.success) { toast('ลบแล้ว', 'success'); loadStock(); }
-        else toast('เกิดข้อผิดพลาด', 'error');
-      } catch { toast('เกิดข้อผิดพลาด', 'error'); }
-    }
-
-    function editStock(id) {
-      const item = stockData.find(i => i.id === id);
-      if (!item) return;
-      const newQty = prompt(`แก้ไขจำนวน "${item.name}" (ปัจจุบัน: ${item.qty} ${item.unit || ''}):`);
-      if (newQty === null) return;
-      fetch(SCRIPT_URL, { method:'POST', body:JSON.stringify({ action:'updateStock', id, qty:newQty, updatedAt:thaiNow() }) })
-        .then(r => r.json()).then(d => { if (d.success) { toast('✅ อัพเดทแล้ว', 'success'); loadStock(); } else toast('เกิดข้อผิดพลาด', 'error'); })
-        .catch(() => toast('เกิดข้อผิดพลาด', 'error'));
+      document.getElementById('qCamPreview').style.display = 'none';
+      document.getElementById('qPhotoBox').style.display = 'flex';
     }
 
     // ========== PWA ==========

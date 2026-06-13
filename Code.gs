@@ -56,7 +56,7 @@ function syncToSheet(p) {
   if (sheet.getLastRow() === 0) {
     const headers = isRepair
       ? ['วันที่/เวลา','ผู้แจ้ง','ทะเบียนรถ','เลขไมล์ (กม.)','อาการที่พบ','URL รูปภาพ','สถานะ']
-      : ['วันที่/เวลา','ผู้เบิก','ทะเบียนรถ','ชื่ออุปกรณ์','จำนวน','หน่วย','แผนก','วัตถุประสงค์','URL รูปภาพ','สถานะ'];
+      : ['วันที่/เวลา','ผู้เบิก','ทะเบียนรถ','รายการที่เบิก','URL รูปภาพ','สถานะ'];
     sheet.appendRow(headers);
     formatHeader(sheet);
   }
@@ -64,7 +64,7 @@ function syncToSheet(p) {
   // Upload image to Drive if provided
   let photoUrl = '';
   if (p.photoBase64 && p.photoName) {
-    const folderId = isRepair ? FOLDER_REPAIR : FOLDER_STOCK;
+    const folderId = FOLDER_REPAIR;
     photoUrl = uploadToDrive(p.photoBase64, p.photoName, folderId);
   }
 
@@ -76,8 +76,7 @@ function syncToSheet(p) {
     ]);
   } else {
     sheet.appendRow([
-      d.datetime, d.requester, d.vehicle, d.equipName,
-      d.qty, d.unit || '', d.department || '', d.purpose || '',
+      d.datetime, d.requester, d.vehicle, d.description || '',
       photoUrl, d.status || 'รออนุมัติ'
     ]);
   }
