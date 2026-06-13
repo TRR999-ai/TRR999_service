@@ -299,6 +299,12 @@
 </head>
 <body>
 
+  <!-- LINE browser warning -->
+  <div id="lineBanner" style="display:none;background:#06c755;color:#fff;padding:12px 16px;align-items:center;gap:10px;font-size:14px;font-weight:600;position:relative;z-index:999">
+    <span style="flex:1">⚠️ กรุณาเปิดใน Chrome เพื่อใช้งานได้ปกติ</span>
+    <button onclick="openInChrome()" style="background:#fff;color:#06c755;border:none;padding:6px 14px;border-radius:20px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;cursor:pointer">เปิด Chrome</button>
+  </div>
+
   <div class="install-banner" id="installBanner">
     <span>📱 ติดตั้งแอพบนหน้าจอ</span>
     <button class="ib-install" onclick="installPWA()">ติดตั้ง</button>
@@ -836,6 +842,29 @@
       const sw = `const C='trr999-v2';self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))))});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const cl=resp.clone();caches.open(C).then(c=>c.put(e.request,cl));return resp})))})`;
       const blob = new Blob([sw], { type:'application/javascript' });
       navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+    }
+
+    // ========== LINE browser detection ==========
+    (function() {
+      var ua = navigator.userAgent || '';
+      if (/Line\//i.test(ua)) {
+        document.getElementById('lineBanner').style.display = 'flex';
+      }
+    })();
+
+    function openInChrome() {
+      var url = location.href;
+      // Android intent to open in Chrome
+      var intent = 'intent://' + url.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+      location.href = intent;
+      // fallback: copy URL
+      setTimeout(function() {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(url).then(function() {
+            alert('คัดลอก URL แล้ว — วางใน Chrome ได้เลย:\n' + url);
+          });
+        }
+      }, 1000);
     }
 
     // Init saved data
