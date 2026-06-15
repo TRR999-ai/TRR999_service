@@ -94,6 +94,13 @@
     .camera-btn-sub{font-size:12px;color:var(--g400)}
     .camera-preview{margin-top:10px;display:none;position:relative}
     .camera-preview img{width:100%;max-height:200px;object-fit:cover;border-radius:var(--rs)}
+    .photo-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .photo-thumb{position:relative;width:90px;height:90px;flex-shrink:0}
+    .photo-thumb img{width:100%;height:100%;object-fit:cover;border-radius:var(--rs)}
+    .photo-thumb-rm{position:absolute;top:-6px;right:-6px;width:22px;height:22px;background:var(--red);color:#fff;border:none;border-radius:50%;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1}
+    .photo-add-btn{width:90px;height:90px;border:2px dashed var(--g300);border-radius:var(--rs);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--g50);flex-shrink:0;position:relative;cursor:pointer}
+    .photo-add-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .photo-add-label{font-size:11px;color:var(--g500)}
     .camera-remove{position:absolute;top:8px;right:8px;width:30px;height:30px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 
     /* Sticky submit bar — fixed bottom, thumb reach */
@@ -387,16 +394,12 @@
           </div>
           <div class="fg">
             <label>ถ่ายรูปประกอบ</label>
-            <div class="camera-btn" id="rPhotoBox">
-              <input type="file" id="r_photo" accept="image/*"
-                     onchange="handleCamera(this,'rCamPreview','rPhotoBox')">
-              <div class="camera-btn-icon">📷</div>
-              <div class="camera-btn-text">ถ่ายรูปหรือเลือกจากคลัง</div>
-              <div class="camera-btn-sub">แนะนำถ่ายรูปจุดที่เสีย</div>
-            </div>
-            <div class="camera-preview" id="rCamPreview">
-              <img src="" alt="">
-              <button type="button" class="camera-remove" onclick="removePhoto('r_photo','rCamPreview','rPhotoBox')">✕</button>
+            <div class="photo-grid" id="rPhotoGrid">
+              <div class="photo-add-btn" id="rAddBtn">
+                <input type="file" id="r_photo" accept="image/*" multiple onchange="addPhotos(this,'r')">
+                <span style="font-size:26px">📷</span>
+                <span class="photo-add-label">เพิ่มรูป</span>
+              </div>
             </div>
           </div>
         </form>
@@ -437,16 +440,12 @@
           </div>
           <div class="fg">
             <label>ถ่ายรูปประกอบ</label>
-            <div class="camera-btn" id="qPhotoBox">
-              <input type="file" id="q_photo" accept="image/*"
-                     onchange="handleCamera(this,'qCamPreview','qPhotoBox')">
-              <div class="camera-btn-icon">📷</div>
-              <div class="camera-btn-text">ถ่ายรูปหรือเลือกจากคลัง</div>
-              <div class="camera-btn-sub">ถ่ายรูปของที่จะเบิก</div>
-            </div>
-            <div class="camera-preview" id="qCamPreview">
-              <img src="" alt="">
-              <button type="button" class="camera-remove" onclick="removePhoto('q_photo','qCamPreview','qPhotoBox')">✕</button>
+            <div class="photo-grid" id="qPhotoGrid">
+              <div class="photo-add-btn" id="qAddBtn">
+                <input type="file" id="q_photo" accept="image/*" multiple onchange="addPhotos(this,'q')">
+                <span style="font-size:26px">📷</span>
+                <span class="photo-add-label">เพิ่มรูป</span>
+              </div>
             </div>
           </div>
         </form>
@@ -584,23 +583,42 @@
       document.getElementById(isReq ? 'q_vehicle' : 'r_vehicle').value = plate;
     }
 
-    // ========== Camera ==========
-    function handleCamera(input, previewId, boxId) {
-      const file = input.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = e => {
-        const prev = document.getElementById(previewId);
-        prev.querySelector('img').src = e.target.result;
-        prev.style.display = 'block';
-        document.getElementById(boxId).style.display = 'none';
-      };
-      reader.readAsDataURL(file);
+    // ========== Multi-photo ==========
+    let rPhotos = [];
+    let qPhotos = [];
+
+    function addPhotos(input, prefix) {
+      const grid = document.getElementById(prefix + 'PhotoGrid');
+      const addBtn = document.getElementById(prefix + 'AddBtn');
+      const arr = prefix === 'r' ? rPhotos : qPhotos;
+      Array.from(input.files).forEach(file => {
+        const idx = arr.length;
+        arr.push(file);
+        const thumb = document.createElement('div');
+        thumb.className = 'photo-thumb';
+        thumb.id = prefix + 'Thumb' + idx;
+        const img = document.createElement('img');
+        img.alt = '';
+        const reader = new FileReader();
+        reader.onload = e => { img.src = e.target.result; };
+        reader.readAsDataURL(file);
+        const rm = document.createElement('button');
+        rm.type = 'button';
+        rm.className = 'photo-thumb-rm';
+        rm.textContent = '✕';
+        rm.onclick = () => removePhotoAt(prefix, idx);
+        thumb.appendChild(img);
+        thumb.appendChild(rm);
+        grid.insertBefore(thumb, addBtn);
+      });
+      input.value = '';
     }
-    function removePhoto(inputId, previewId, boxId) {
-      document.getElementById(inputId).value = '';
-      document.getElementById(previewId).style.display = 'none';
-      document.getElementById(boxId).style.display = 'flex';
+
+    function removePhotoAt(prefix, idx) {
+      const arr = prefix === 'r' ? rPhotos : qPhotos;
+      arr[idx] = null;
+      const el = document.getElementById(prefix + 'Thumb' + idx);
+      if (el) el.remove();
     }
 
     // ========== Success overlay ==========
@@ -715,14 +733,14 @@
       };
 
       try {
-        const photoFile = document.getElementById('r_photo').files[0];
+        const photoFiles = rPhotos.filter(f => f);
         const docRef = await db.collection('repairs').add(data);
         showSuccess('ส่งคำขอซ่อมสำเร็จ!', `ทะเบียน ${data.vehicle} · ไมล์ ${data.mileage} กม.`);
         resetRepairForm();
         btn.disabled = false;
         btn.textContent = 'ส่งคำขอซ่อม →';
 
-        syncAndClean('repairs', docRef.id, data, photoFile || null);
+        syncAndClean('repairs', docRef.id, data, photoFiles);
 
       } catch (err) {
         toast('เกิดข้อผิดพลาด: ' + err.message, 'error');
@@ -752,14 +770,14 @@
       };
 
       try {
-        const photoFile = document.getElementById('q_photo').files[0];
+        const photoFiles = qPhotos.filter(f => f);
         const docRef = await db.collection('requisitions').add(data);
         showSuccess('ส่งใบเบิกสำเร็จ!', `${data.requester} · ${data.vehicle}`);
         resetReqForm();
         btn.disabled = false;
         btn.textContent = 'ส่งใบเบิก →';
 
-        syncAndClean('requisitions', docRef.id, data, photoFile || null);
+        syncAndClean('requisitions', docRef.id, data, photoFiles);
 
       } catch (err) {
         toast('เกิดข้อผิดพลาด: ' + err.message, 'error');
@@ -770,12 +788,12 @@
 
     // ========== Sync to Sheets → delete from Firebase ==========
     // Firebase is a temp buffer only — after GAS confirms Sheets write, doc is deleted
-    async function syncAndClean(collection, docId, data, photoFile) {
+    async function syncAndClean(collection, docId, data, photoFiles) {
       try {
-        let photoBase64 = '', photoName = '';
-        if (photoFile) {
-          photoBase64 = await compressToBase64(photoFile);
-          photoName = photoFile.name;
+        const files = Array.isArray(photoFiles) ? photoFiles : (photoFiles ? [photoFiles] : []);
+        const photos = [];
+        for (const f of files) {
+          if (f) photos.push({ base64: await compressToBase64(f), name: f.name });
         }
 
         const resp = await fetch(SCRIPT_URL, {
@@ -784,8 +802,7 @@
             action: 'syncToSheet',
             collection,
             data,
-            photoBase64,
-            photoName
+            photos
           })
         });
         const result = await resp.json();
@@ -816,14 +833,14 @@
     // ========== Form Reset ==========
     function resetRepairForm() {
       document.getElementById('repairForm').reset();
-      document.getElementById('rCamPreview').style.display = 'none';
-      document.getElementById('rPhotoBox').style.display = 'flex';
+      rPhotos = [];
+      document.querySelectorAll('[id^=rThumb]').forEach(el => el.remove());
     }
 
     function resetReqForm() {
       document.getElementById('reqForm').reset();
-      document.getElementById('qCamPreview').style.display = 'none';
-      document.getElementById('qPhotoBox').style.display = 'flex';
+      qPhotos = [];
+      document.querySelectorAll('[id^=qThumb]').forEach(el => el.remove());
     }
 
     // ========== PWA ==========

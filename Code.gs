@@ -61,10 +61,19 @@ function syncToSheet(p) {
     formatHeader(sheet);
   }
 
-  // Upload image to Drive if provided
+  // Upload images to Drive if provided
   let photoUrl = '';
-  if (p.photoBase64 && p.photoName) {
-    const folderId = FOLDER_REPAIR;
+  const folderId = FOLDER_REPAIR;
+  if (p.photos && p.photos.length > 0) {
+    const urls = [];
+    p.photos.forEach(function(ph) {
+      if (ph.base64 && ph.name) {
+        const url = uploadToDrive(ph.base64, ph.name, folderId);
+        if (url) urls.push(url);
+      }
+    });
+    photoUrl = urls.join(', ');
+  } else if (p.photoBase64 && p.photoName) {
     photoUrl = uploadToDrive(p.photoBase64, p.photoName, folderId);
   }
 
