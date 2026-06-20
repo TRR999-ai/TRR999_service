@@ -61,9 +61,9 @@ function syncToSheet(p) {
     formatHeader(sheet);
   }
 
-  // Upload images to Drive if provided
+  // Upload images to Drive if provided — repair photos and requisition photos go to separate folders
   let photoUrl = '';
-  const folderId = FOLDER_REPAIR;
+  const folderId = isRepair ? FOLDER_REPAIR : FOLDER_STOCK;
   if (p.photos && p.photos.length > 0) {
     const urls = [];
     p.photos.forEach(function(ph) {

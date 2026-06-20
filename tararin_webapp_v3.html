@@ -43,9 +43,9 @@
 
     /* Tabs */
     .tabs{background:var(--blue-d);display:flex;border-top:1px solid rgba(255,255,255,.1)}
-    .tab-btn{flex:1;padding:10px 4px;background:none;border:none;color:rgba(255,255,255,.6);font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;border-bottom:3px solid transparent;transition:all .2s}
-    .tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
-    .tab-btn svg{width:18px;height:18px}
+    .tab-btn{flex:1;padding:12px 4px;background:none;border:none;color:rgba(255,255,255,.7);font-family:'Sarabun',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-bottom:4px solid transparent;transition:all .2s}
+    .tab-btn.active{color:var(--gold);font-weight:800;border-bottom-color:var(--gold);background:rgba(240,165,0,.13)}
+    .tab-btn svg{width:22px;height:22px}
 
     /* Layout */
     .content{max-width:600px;margin:0 auto;padding:16px}
@@ -85,15 +85,7 @@
     .recent-chip{padding:7px 14px;background:var(--g100);border:1.5px solid var(--g200);border-radius:8px;font-size:14px;font-weight:600;color:var(--g700);cursor:pointer;transition:all .2s}
     .recent-chip:hover{background:var(--g200)}
 
-    /* Camera button — big, obvious */
-    .camera-btn{width:100%;min-height:80px;border:3px dashed rgba(26,58,107,.25);border-radius:var(--r);background:rgba(26,58,107,.03);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;position:relative;transition:all .2s}
-    .camera-btn:hover,.camera-btn:active{background:rgba(26,58,107,.08);border-color:var(--blue)}
-    .camera-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-    .camera-btn-icon{font-size:28px}
-    .camera-btn-text{font-size:15px;font-weight:700;color:var(--blue)}
-    .camera-btn-sub{font-size:12px;color:var(--g400)}
-    .camera-preview{margin-top:10px;display:none;position:relative}
-    .camera-preview img{width:100%;max-height:200px;object-fit:cover;border-radius:var(--rs)}
+    /* Photo grid — multi-photo thumbnails */
     .photo-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
     .photo-thumb{position:relative;width:90px;height:90px;flex-shrink:0}
     .photo-thumb img{width:100%;height:100%;object-fit:cover;border-radius:var(--rs)}
@@ -101,7 +93,6 @@
     .photo-add-btn{width:90px;height:90px;border:2px dashed var(--g300);border-radius:var(--rs);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--g50);flex-shrink:0;position:relative;cursor:pointer}
     .photo-add-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
     .photo-add-label{font-size:11px;color:var(--g500)}
-    .camera-remove{position:absolute;top:8px;right:8px;width:30px;height:30px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 
     /* Sticky submit bar — fixed bottom, thumb reach */
     .sticky-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--g200);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px;z-index:200;box-shadow:0 -4px 20px rgba(0,0,0,.1)}
@@ -121,95 +112,9 @@
     .success-back{padding:16px 40px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-family:'Sarabun',sans-serif;font-size:17px;font-weight:700;cursor:pointer}
     @keyframes pop{0%{transform:scale(0.5);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
 
-    /* Photo upload */
-    .photo-upload{border:2px dashed var(--g300);border-radius:var(--rs);padding:20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--g50)}
-    .photo-upload:hover{border-color:var(--blue)}
-    .photo-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-    .photo-upload-icon{font-size:32px;margin-bottom:8px}
-    .photo-upload-text{font-size:14px;color:var(--g500)}
-    .photo-preview{margin-top:10px;display:none}
-    .photo-preview img{max-width:100%;max-height:200px;border-radius:var(--rs);object-fit:cover}
-
-    /* Urgency */
-    .urg-group{display:flex;gap:8px}
-    .urg-btn{flex:1;padding:8px;border:2px solid var(--g200);border-radius:var(--rs);background:#fff;font-family:'Sarabun',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;text-align:center}
-    .sel-ด่วน{border-color:var(--red)!important;background:#fef2f2!important;color:var(--red)!important;font-weight:600!important}
-    .sel-ปกติ{border-color:#f59e0b!important;background:#fffbeb!important;color:#b45309!important;font-weight:600!important}
-    .sel-ไม่ด่วน{border-color:var(--green)!important;background:#f0fdf4!important;color:#15803d!important;font-weight:600!important}
-
     /* Buttons */
     .btn{width:100%;padding:14px;border:none;border-radius:var(--rs);font-family:'Sarabun',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
-    .btn-primary{background:linear-gradient(135deg,var(--blue) 0%,var(--blue-l) 100%);color:#fff;box-shadow:0 4px 12px rgba(26,58,107,.3)}
-    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(26,58,107,.4)}
-    .btn-primary:active{transform:translateY(0)}
-    .btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
-    .btn-gold{background:linear-gradient(135deg,var(--gold-d) 0%,var(--gold) 100%);color:#fff;box-shadow:0 4px 12px rgba(240,165,0,.3)}
-    .btn-sm{width:auto;padding:8px 16px;font-size:14px}
-    .btn-outline{background:#fff;border:1.5px solid var(--g300);color:var(--g700)}
-    .btn-danger-sm{background:#fee2e2;color:var(--red);border:none;padding:4px 10px;border-radius:6px;font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer}
-    .btn-edit-sm{background:rgba(26,58,107,.08);color:var(--blue);border:none;padding:4px 10px;border-radius:6px;font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer}
 
-    /* Submit button states */
-    .btn-step{font-size:13px;opacity:.85}
-
-    /* Vision Section */
-    .vision-card{background:linear-gradient(135deg,rgba(26,58,107,.04) 0%,rgba(240,165,0,.06) 100%);border:1.5px solid rgba(26,58,107,.15);border-radius:var(--r);padding:16px;margin-bottom:16px}
-    .vision-title{font-size:14px;font-weight:700;color:var(--blue);margin-bottom:10px;display:flex;align-items:center;gap:6px}
-    .vision-cam-btn{width:100%;padding:14px;border:2px dashed rgba(26,58,107,.3);border-radius:var(--rs);background:rgba(26,58,107,.04);font-family:'Sarabun',sans-serif;font-size:15px;font-weight:600;color:var(--blue);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;position:relative}
-    .vision-cam-btn:hover{background:rgba(26,58,107,.08);border-color:var(--blue)}
-    .vision-cam-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-    .vision-hint{font-size:11px;color:var(--g400);font-weight:400}
-
-    .vision-analyzing{display:flex;align-items:center;gap:10px;padding:12px;background:#fff;border-radius:var(--rs);margin-top:10px}
-    .vision-analyzing p{font-size:14px;color:var(--g700)}
-
-    .detected-result{margin-top:10px;display:none}
-    .detected-label{font-size:12px;font-weight:600;color:var(--g500);margin-bottom:6px}
-    .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-    .chip{padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all .2s}
-    .chip-item{background:rgba(26,58,107,.08);color:var(--blue);border-color:rgba(26,58,107,.2)}
-    .chip-item:hover,.chip-item.selected{background:var(--blue);color:#fff;border-color:var(--blue)}
-    .chip-qty{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
-    .chip-qty:hover,.chip-qty.selected{background:#15803d;color:#fff;border-color:#15803d}
-    .chip-text{background:#f8f7ff;color:#6d28d9;border-color:#ddd6fe;font-size:11px;font-weight:500;cursor:default}
-
-    .vision-img-preview{width:100%;max-height:140px;object-fit:cover;border-radius:var(--rs);margin-top:10px;display:none}
-
-    /* Stock Grid */
-    .stock-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-    .stock-item{background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:transform .2s,box-shadow .2s}
-    .stock-item:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
-    .stock-item-img{width:100%;height:110px;background:var(--g100);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden}
-    .stock-item-img img{width:100%;height:100%;object-fit:cover}
-    .stock-item-body{padding:10px}
-    .stock-item-name{font-size:14px;font-weight:600;color:var(--g900);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .qty-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600}
-    .qty-ok{background:#dcfce7;color:#16a34a}
-    .qty-low{background:#fef9c3;color:#ca8a04}
-    .qty-out{background:#fee2e2;color:#dc2626}
-    .admin-actions{display:none;gap:6px;margin-top:8px}
-    .admin-actions.show{display:flex}
-
-    /* Admin */
-    .admin-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px}
-    .admin-badge{background:linear-gradient(135deg,var(--blue) 0%,var(--blue-l) 100%);color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}
-    .add-stock-card{display:none}
-    .add-stock-card.show{display:block}
-
-    /* Modal */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
-    .modal-overlay.show{opacity:1;pointer-events:all}
-    .modal{background:#fff;border-radius:var(--r);width:100%;max-width:420px;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-lg);transform:scale(.9);transition:transform .2s}
-    .modal-overlay.show .modal{transform:scale(1)}
-    .modal-header{padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between}
-    .modal-title{font-size:17px;font-weight:700;color:var(--blue)}
-    .modal-close{width:32px;height:32px;border:none;background:var(--g100);border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--g500)}
-    .modal-body{padding:16px 20px 20px}
-    .modal-img{width:100%;max-height:200px;object-fit:cover;border-radius:var(--rs);margin-bottom:14px}
-    .detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--g100)}
-    .detail-row:last-child{border-bottom:none}
-    .detail-label{font-size:13px;color:var(--g500);flex-shrink:0}
-    .detail-value{font-size:14px;font-weight:600;color:var(--g900);text-align:right;max-width:65%}
 
     /* Toast */
     .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--g900);color:#fff;padding:12px 24px;border-radius:30px;font-size:14px;font-weight:500;box-shadow:var(--shadow-lg);z-index:2000;transition:transform .3s;white-space:nowrap}
@@ -221,10 +126,6 @@
     .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
     .spinner-dark{width:16px;height:16px;border:2px solid rgba(26,58,107,.2);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
     @keyframes spin{to{transform:rotate(360deg)}}
-
-    /* 2-column form row — desktop only, mobile always 1 col */
-    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media(max-width:600px){.form-row{grid-template-columns:1fr}}
 
     /* Connection pill */
     .conn-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:14px}
@@ -242,19 +143,6 @@
     .card-head-text h2{font-size:17px;font-weight:700;color:var(--g900);margin-bottom:2px}
     .card-head-text p{font-size:12px;color:var(--g400)}
 
-    /* Upload area redesigned */
-    .upload-area{border:2px dashed var(--g300);border-radius:var(--rs);padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--g50)}
-    .upload-area:hover{border-color:var(--blue);background:rgba(26,58,107,.03)}
-    .upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-    .upload-icon{color:var(--g400);margin-bottom:8px}
-    .upload-main{font-size:14px;font-weight:600;color:var(--g700);margin-bottom:2px}
-    .upload-sub{font-size:12px;color:var(--g400)}
-    .upload-preview{margin-top:10px;display:none}
-    .upload-preview img{max-width:100%;max-height:180px;border-radius:var(--rs);object-fit:cover}
-
-    /* Button pair */
-    .btn-pair{display:flex;gap:10px;margin-top:6px}
-    .btn-pair .btn{flex:1}
     .btn-clear{background:#fff;border:1.5px solid var(--g300);color:var(--g700)}
     .btn-clear:hover{background:var(--g50);border-color:var(--g400)}
     .btn-submit-gold{background:linear-gradient(135deg,var(--gold-d) 0%,var(--gold) 100%);color:#fff;box-shadow:0 4px 12px rgba(240,165,0,.3)}
@@ -268,40 +156,11 @@
     .ib-install{margin-left:auto;background:#fff;color:var(--gold-d);border:none;padding:5px 14px;border-radius:20px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
     .ib-dismiss{background:rgba(255,255,255,.3);color:#fff;border:none;padding:5px 10px;border-radius:20px;font-family:'Sarabun',sans-serif;font-size:12px;cursor:pointer}
 
-    .empty-state{text-align:center;padding:40px 20px;color:var(--g400)}
-    .empty-state-icon{font-size:48px;margin-bottom:12px}
-
     /* Firebase status dot */
     .fb-status{width:8px;height:8px;border-radius:50%;background:var(--g300);display:inline-block;margin-left:6px}
     .fb-status.connected{background:var(--green)}
     .fb-status.error{background:var(--red)}
 
-    /* Stock stats */
-    .stock-stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-    .stock-stat-card{background:var(--blue);color:#fff;border-radius:var(--rs);padding:12px 14px}
-    .stock-stat-label{font-size:11px;font-weight:500;opacity:.75;margin-bottom:4px}
-    .stock-stat-num{font-size:26px;font-weight:700;line-height:1}
-    /* Stock table */
-    .stock-card-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--g100)}
-    .stock-card-title{font-size:15px;font-weight:700;color:var(--g900)}
-    .stock-card-sub{font-size:11px;color:var(--g400);margin-top:1px}
-    .stock-info-bar{background:#eff6ff;color:#1d4ed8;padding:10px 16px;font-size:13px;border-bottom:1px solid #bfdbfe}
-    .btn-admin-sm{background:transparent;border:1.5px solid var(--g300);color:var(--g700);padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Sarabun',sans-serif}
-    .btn-admin-sm:hover{border-color:var(--blue);color:var(--blue)}
-    .stock-table-wrap{overflow-x:auto}
-    .stock-table{width:100%;border-collapse:collapse}
-    .stock-table thead th{background:var(--blue);color:#fff;padding:10px 12px;text-align:left;font-size:13px;font-weight:600}
-    .stock-table td{padding:10px 12px;border-bottom:1px solid var(--g100);font-size:14px;vertical-align:middle}
-    .stock-table tr:last-child td{border-bottom:none}
-    .stock-table tbody tr:hover td{background:var(--g50);cursor:pointer}
-    .stock-thumb{width:44px;height:44px;object-fit:cover;border-radius:6px;display:block}
-    .stock-thumb-empty{width:44px;height:44px;background:var(--g100);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px}
-    .stock-qty-num{font-size:16px;font-weight:700;color:var(--g900);text-align:center}
-    .status-ok{display:inline-block;padding:3px 8px;background:#dcfce7;color:#15803d;border-radius:20px;font-size:12px;font-weight:600}
-    .status-low{display:inline-block;padding:3px 8px;background:#fef9c3;color:#ca8a04;border-radius:20px;font-size:12px;font-weight:600}
-    .status-out{display:inline-block;padding:3px 8px;background:#fee2e2;color:#dc2626;border-radius:20px;font-size:12px;font-weight:600}
-    .stock-row-actions{display:none;gap:6px;margin-top:6px}
-    .stock-row-actions.show{display:flex}
   </style>
 </head>
 <body>
@@ -349,6 +208,7 @@
     </div>
     <div class="success-title" id="successTitle">ส่งสำเร็จแล้ว!</div>
     <div class="success-sub" id="successSub">ข้อมูลถูกบันทึกเรียบร้อย</div>
+    <div id="successSync" style="display:none;font-size:14px;font-weight:600;margin-top:-20px;margin-bottom:28px"></div>
     <button class="success-back" onclick="closeSuccess()">กลับหน้าหลัก</button>
   </div>
 
@@ -452,6 +312,7 @@
       </div>
     </div>
 
+    <div style="text-align:center;font-size:11px;color:var(--g400);padding:14px 0 4px">TRR999 · <span id="appVer"></span></div>
   </main>
 
   <!-- Sticky Submit Bar — repair -->
@@ -466,6 +327,11 @@
     <button type="submit" form="reqForm" class="btn btn-submit-gold" id="qSubmitBtn">ส่งใบเบิก →</button>
   </div>
 
+
+  <!-- Global upload indicator — visible even after closing the success overlay -->
+  <div id="uploadBar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:180;background:var(--blue);color:#fff;padding:8px 12px;text-align:center;font-size:13px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.2)">
+    <span class="spinner" style="display:inline-block;vertical-align:-3px;margin-right:6px"></span>กำลังอัปโหลดรูป... อย่าเพิ่งปิดแอป
+  </div>
 
   <div class="toast" id="toast"></div>
 
@@ -482,8 +348,6 @@
 
     // GAS URL — สำหรับ Vision API + image upload + stock management
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwgCrkbuTNlQuqqBn1OzRr5WrPlSfvz-S7tjg17vrnO9kzYnzzYxH3c2j7X7M2f-iB3/exec';
-
-    const ADMIN_PW = 'tararin999';
 
     // ========== Firebase Init ==========
     let db;
@@ -507,7 +371,6 @@
     }
 
     // ========== State ==========
-    let urgency = '';
     let deferredPrompt = null;
 
     // ========== Time ==========
@@ -584,6 +447,7 @@
     }
 
     // ========== Multi-photo ==========
+    const MAX_PHOTOS = 6;
     let rPhotos = [];
     let qPhotos = [];
 
@@ -591,7 +455,9 @@
       const grid = document.getElementById(prefix + 'PhotoGrid');
       const addBtn = document.getElementById(prefix + 'AddBtn');
       const arr = prefix === 'r' ? rPhotos : qPhotos;
+      let reached = false;
       Array.from(input.files).forEach(file => {
+        if (arr.filter(f => f).length >= MAX_PHOTOS) { reached = true; return; }
         const idx = arr.length;
         arr.push(file);
         const thumb = document.createElement('div');
@@ -612,6 +478,8 @@
         grid.insertBefore(thumb, addBtn);
       });
       input.value = '';
+      if (reached) toast(`เพิ่มรูปได้สูงสุด ${MAX_PHOTOS} รูป`, 'error');
+      updateAddBtn(prefix);
     }
 
     function removePhotoAt(prefix, idx) {
@@ -619,12 +487,25 @@
       arr[idx] = null;
       const el = document.getElementById(prefix + 'Thumb' + idx);
       if (el) el.remove();
+      updateAddBtn(prefix);
+    }
+
+    // Hide the add button at the photo cap, show a running count on it
+    function updateAddBtn(prefix) {
+      const arr = prefix === 'r' ? rPhotos : qPhotos;
+      const addBtn = document.getElementById(prefix + 'AddBtn');
+      if (!addBtn) return;
+      const count = arr.filter(f => f).length;
+      addBtn.style.display = count >= MAX_PHOTOS ? 'none' : 'flex';
+      const label = addBtn.querySelector('.photo-add-label');
+      if (label) label.textContent = count ? `เพิ่มรูป (${count}/${MAX_PHOTOS})` : 'เพิ่มรูป';
     }
 
     // ========== Success overlay ==========
     function showSuccess(title, sub) {
       document.getElementById('successTitle').textContent = title;
       document.getElementById('successSub').textContent  = sub;
+      setSyncStatus(null);  // clear any leftover status from a previous submit
       document.getElementById('successOverlay').classList.add('show');
       // vibrate on Android
       if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
@@ -633,39 +514,7 @@
       document.getElementById('successOverlay').classList.remove('show');
     }
 
-    // ========== Urgency ==========
-    function setUrgency(level, btn) {
-      urgency = level;
-      document.getElementById('r_urgency').value = level;
-      document.querySelectorAll('.urg-btn').forEach(b => b.className = 'urg-btn');
-      btn.classList.add('sel-' + level);
-    }
-
-    // ========== Photo/Upload Preview ==========
-    function previewPhoto(input, previewId, boxId) { previewUpload(input, previewId, boxId); }
-    function previewUpload(input, previewId, boxId) {
-      const file = input.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = e => {
-        const div = document.getElementById(previewId);
-        div.querySelector('img').src = e.target.result;
-        div.style.display = 'block';
-        document.getElementById(boxId).style.display = 'none';
-      };
-      reader.readAsDataURL(file);
-    }
-
     // ========== Helpers ==========
-    function fileToBase64(file) {
-      return new Promise((res, rej) => {
-        const r = new FileReader();
-        r.onload = e => res(e.target.result.split(',')[1]);
-        r.onerror = rej;
-        r.readAsDataURL(file);
-      });
-    }
-
     function thaiNow() {
       return new Date().toLocaleString('th-TH', {
         timeZone:'Asia/Bangkok', year:'numeric', month:'2-digit', day:'2-digit',
@@ -736,6 +585,7 @@
         const photoFiles = rPhotos.filter(f => f);
         const docRef = await db.collection('repairs').add(data);
         showSuccess('ส่งคำขอซ่อมสำเร็จ!', `ทะเบียน ${data.vehicle} · ไมล์ ${data.mileage} กม.`);
+        if (photoFiles.length) setSyncStatus(`กำลังอัปโหลดรูป ${photoFiles.length} รูป...`, 'loading');
         resetRepairForm();
         btn.disabled = false;
         btn.textContent = 'ส่งคำขอซ่อม →';
@@ -773,6 +623,7 @@
         const photoFiles = qPhotos.filter(f => f);
         const docRef = await db.collection('requisitions').add(data);
         showSuccess('ส่งใบเบิกสำเร็จ!', `${data.requester} · ${data.vehicle}`);
+        if (photoFiles.length) setSyncStatus(`กำลังอัปโหลดรูป ${photoFiles.length} รูป...`, 'loading');
         resetReqForm();
         btn.disabled = false;
         btn.textContent = 'ส่งใบเบิก →';
@@ -787,40 +638,93 @@
     }
 
     // ========== Sync to Sheets → delete from Firebase ==========
-    // Firebase is a temp buffer only — after GAS confirms Sheets write, doc is deleted
+    // Firebase is a temp buffer only — after GAS confirms Sheets write, doc is deleted.
+    // Photos live only in memory until this finishes, so we guard against closing mid-upload.
+    let pendingSync = 0;
+    let pendingPhotoSync = 0;  // syncs still holding un-uploaded photos in memory
+
+    // Warn the driver if they try to close while photos are still uploading (text is already safe in Firebase)
+    window.addEventListener('beforeunload', e => {
+      if (pendingPhotoSync > 0) { e.preventDefault(); e.returnValue = ''; }
+    });
+
+    function updateUploadBar() {
+      const bar = document.getElementById('uploadBar');
+      if (bar) bar.style.display = pendingPhotoSync > 0 ? 'block' : 'none';
+    }
+
+    function setSyncStatus(text, state) {
+      const el = document.getElementById('successSync');
+      if (!el) return;
+      if (!text) { el.style.display = 'none'; el.innerHTML = ''; return; }
+      el.style.display = 'block';
+      if (state === 'loading') {
+        el.innerHTML = `<span class="spinner-dark" style="display:inline-block;vertical-align:-3px;margin-right:6px"></span><span style="color:var(--g500)">${text}</span>`;
+      } else if (state === 'error') {
+        el.innerHTML = `<span style="color:var(--red)">⚠️ ${text}</span>`;
+      } else {
+        el.innerHTML = `<span style="color:var(--green)">✓ ${text}</span>`;
+      }
+    }
+
+    // POST to GAS with retry — survives brief network drops so photos aren't lost
+    async function postWithRetry(payload, tries = 3) {
+      for (let i = 0; i < tries; i++) {
+        try {
+          const resp = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+          const result = await resp.json();
+          if (result && result.success) return result;
+        } catch (e) { /* network blip — retry */ }
+        if (i < tries - 1) await new Promise(r => setTimeout(r, 1500 * (i + 1)));
+      }
+      return { success: false };
+    }
+
     async function syncAndClean(collection, docId, data, photoFiles) {
+      pendingSync++;
+      const files = (Array.isArray(photoFiles) ? photoFiles : (photoFiles ? [photoFiles] : [])).filter(f => f);
+      if (files.length) { pendingPhotoSync++; updateUploadBar(); }
       try {
-        const files = Array.isArray(photoFiles) ? photoFiles : (photoFiles ? [photoFiles] : []);
         const photos = [];
         for (const f of files) {
-          if (f) photos.push({ base64: await compressToBase64(f), name: f.name });
+          photos.push({ base64: await compressToBase64(f), name: f.name });
         }
 
-        const resp = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify({
-            action: 'syncToSheet',
-            collection,
-            data,
-            photos
-          })
-        });
-        const result = await resp.json();
+        const result = await postWithRetry({ action: 'syncToSheet', collection, data, photos });
 
         if (result.success) {
           // Sheets confirmed → clean up Firebase
           await db.collection(collection).doc(docId).delete();
+          if (files.length) setSyncStatus('บันทึกรูปครบแล้ว', 'done');
+        } else {
+          // GAS unreachable after retries → doc stays in Firebase; ask the driver to resend
+          if (files.length) setSyncStatus('อัปโหลดรูปไม่สำเร็จ กรุณาส่งใหม่อีกครั้ง', 'error');
         }
-        // If GAS fails → doc stays in Firebase (can be retried later)
       } catch (err) {
-        console.warn('Sync failed, doc kept in Firebase for retry:', err);
+        console.warn('Sync failed, doc kept in Firebase:', err);
+        if (files.length) setSyncStatus('อัปโหลดรูปไม่สำเร็จ กรุณาส่งใหม่อีกครั้ง', 'error');
+      } finally {
+        pendingSync--;
+        if (files.length) { pendingPhotoSync--; updateUploadBar(); }
       }
     }
 
-    // ========== Modal ==========
-    function showModal(id) { document.getElementById(id).classList.add('show'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-    function overlayClose(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+    // Recover orphaned submissions — text that reached Firebase but never synced to Sheets
+    // (e.g. network dropped mid-sync). Photos from that session are gone, so we resend text only.
+    async function resyncPending() {
+      if (!db) return;
+      for (const col of ['repairs', 'requisitions']) {
+        try {
+          const snap = await db.collection(col).get();
+          for (const doc of snap.docs) {
+            const result = await postWithRetry({ action: 'syncToSheet', collection: col, data: doc.data(), photos: [] });
+            if (result.success) await db.collection(col).doc(doc.id).delete();
+          }
+        } catch (e) {
+          console.warn('resync skipped for', col, '—', e.message);  // read may be blocked by Firestore rules
+        }
+      }
+    }
 
     // ========== Toast ==========
     function toast(msg, type = '') {
@@ -835,12 +739,14 @@
       document.getElementById('repairForm').reset();
       rPhotos = [];
       document.querySelectorAll('[id^=rThumb]').forEach(el => el.remove());
+      updateAddBtn('r');
     }
 
     function resetReqForm() {
       document.getElementById('reqForm').reset();
       qPhotos = [];
       document.querySelectorAll('[id^=qThumb]').forEach(el => el.remove());
+      updateAddBtn('q');
     }
 
     // ========== PWA ==========
@@ -854,11 +760,10 @@
       deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById('installBanner').classList.remove('show'); });
     }
 
-    // Service Worker
+    // Service Worker — external file (blob URL has no usable scope, so it never controlled the page)
+    // sw.js does network-first for HTML → drivers always get the latest build when online
     if ('serviceWorker' in navigator) {
-      const sw = `const C='trr999-v2';self.addEventListener('install',e=>{self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))))});self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const cl=resp.clone();caches.open(C).then(c=>c.put(e.request,cl));return resp})))})`;
-      const blob = new Blob([sw], { type:'application/javascript' });
-      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+      navigator.serviceWorker.register('sw.js').catch(()=>{});
     }
 
     // ========== LINE browser detection ==========
@@ -887,6 +792,14 @@
     // Init saved data
     renderSavedNames();
     renderRecentVehicles();
+
+    // App version — lets you confirm a driver is on the latest build
+    const APP_VERSION = 'v3.1 · 2026-06-20';
+    document.getElementById('appVer').textContent = APP_VERSION;
+    console.log('TRR999', APP_VERSION);
+
+    // Recover any submissions stuck in Firebase from a previous session
+    setTimeout(resyncPending, 2500);
 
     // PWA Manifest
     const mf = { name:'ธรารินทร์ 999 - ระบบแจ้งซ่อม', short_name:'TRR999', theme_color:'#1a3a6b', background_color:'#1a3a6b', display:'standalone', orientation:'portrait', start_url:'.', icons:[{ src:'TRR999logo.png', sizes:'512x512', type:'image/png', purpose:'any maskable' }] };
