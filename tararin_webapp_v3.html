@@ -526,28 +526,83 @@
       return 'trr-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
     }
 
-    // Compress image before upload (reduce size to ~300KB max)
-    function compressImage(file, maxKB = 300) {
+    // Read EXIF orientation (1-8) from a JPEG header; 1 = normal, 6/8 = portrait phone shots
+    function getOrientation(file) {
       return new Promise(resolve => {
         const reader = new FileReader();
         reader.onload = e => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let w = img.width, h = img.height;
-            const maxDim = 1200;
-            if (w > maxDim || h > maxDim) {
-              if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
-              else       { w = Math.round(w * maxDim / h); h = maxDim; }
+          try {
+            const view = new DataView(e.target.result);
+            if (view.getUint16(0, false) !== 0xFFD8) { resolve(1); return; }  // not JPEG
+            const len = view.byteLength;
+            let offset = 2;
+            while (offset < len) {
+              const marker = view.getUint16(offset, false); offset += 2;
+              if (marker === 0xFFE1) {  // APP1 — holds EXIF
+                if (view.getUint32(offset + 2, false) !== 0x45786966) { resolve(1); return; }  // "Exif"
+                const little = view.getUint16(offset + 8, false) === 0x4949;
+                const tiff = offset + 8;
+                const tags = view.getUint16(tiff + 2, little);
+                for (let i = 0; i < tags; i++) {
+                  const entry = tiff + 4 + i * 12;
+                  if (view.getUint16(entry, little) === 0x0112) { resolve(view.getUint16(entry + 8, little)); return; }
+                }
+              } else if ((marker & 0xFF00) !== 0xFF00) { break; }
+              else { offset += view.getUint16(offset, false); }
             }
-            canvas.width = w; canvas.height = h;
-            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-            canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.75);
-          };
-          img.src = e.target.result;
+          } catch (err) { /* unreadable header — assume normal */ }
+          resolve(1);
         };
-        reader.readAsDataURL(file);
+        reader.onerror = () => resolve(1);
+        reader.readAsArrayBuffer(file.slice(0, 65536));  // EXIF lives in the first bytes
       });
+    }
+
+    // Apply an EXIF orientation as a canvas transform
+    function applyOrientation(ctx, o, w, h) {
+      switch (o) {
+        case 2: ctx.transform(-1, 0, 0, 1, w, 0); break;
+        case 3: ctx.transform(-1, 0, 0, -1, w, h); break;
+        case 4: ctx.transform(1, 0, 0, -1, 0, h); break;
+        case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
+        case 6: ctx.transform(0, 1, -1, 0, h, 0); break;
+        case 7: ctx.transform(0, -1, -1, 0, h, w); break;
+        case 8: ctx.transform(0, -1, 1, 0, 0, w); break;
+      }
+    }
+
+    // Compress before upload: fix rotation (EXIF) and step quality down until <= maxKB
+    async function compressImage(file, maxKB = 300) {
+      const orientation = await getOrientation(file);
+      const dataUrl = await new Promise((res, rej) => {
+        const r = new FileReader(); r.onload = e => res(e.target.result); r.onerror = rej; r.readAsDataURL(file);
+      });
+      const img = await new Promise((res, rej) => {
+        const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = dataUrl;
+      });
+
+      let w = img.width, h = img.height;
+      const maxDim = 1200;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+        else       { w = Math.round(w * maxDim / h); h = maxDim; }
+      }
+
+      const swap = orientation >= 5 && orientation <= 8;  // 90°/270° rotations swap width/height
+      const canvas = document.createElement('canvas');
+      canvas.width  = swap ? h : w;
+      canvas.height = swap ? w : h;
+      const ctx = canvas.getContext('2d');
+      applyOrientation(ctx, orientation, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+
+      let quality = 0.8;
+      let blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', quality));
+      while (blob && blob.size / 1024 > maxKB && quality > 0.4) {
+        quality -= 0.12;
+        blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', quality));
+      }
+      return blob;
     }
 
     async function compressToBase64(file) {
@@ -563,6 +618,7 @@
     // ========== SUBMIT REPAIR — Firebase instant ==========
     async function submitRepair(e) {
       e.preventDefault();
+      if (!navigator.onLine) { toast('ไม่มีสัญญาณเน็ต รอสัญญาณแล้วส่งใหม่', 'error'); return; }
 
       const btn = document.getElementById('rSubmitBtn');
       btn.disabled = true;
@@ -602,6 +658,7 @@
     // ========== SUBMIT REQUISITION — Firebase instant ==========
     async function submitRequisition(e) {
       e.preventDefault();
+      if (!navigator.onLine) { toast('ไม่มีสัญญาณเน็ต รอสัญญาณแล้วส่งใหม่', 'error'); return; }
 
       const btn = document.getElementById('qSubmitBtn');
       btn.disabled = true;
@@ -686,8 +743,13 @@
       if (files.length) { pendingPhotoSync++; updateUploadBar(); }
       try {
         const photos = [];
+        const safeVeh = (data.vehicle || 'veh').replace(/[^\w\\u0E00-\\u0E7F-]/g, '') || 'veh';
+        const stamp = Date.now();
+        const prefix = collection === 'repairs' ? 'ซ่อม' : 'เบิก';
+        let n = 0;
         for (const f of files) {
-          photos.push({ base64: await compressToBase64(f), name: f.name });
+          n++;
+          photos.push({ base64: await compressToBase64(f), name: `${prefix}_${safeVeh}_${stamp}_${n}.jpg` });
         }
 
         const result = await postWithRetry({ action: 'syncToSheet', collection, data, photos });
