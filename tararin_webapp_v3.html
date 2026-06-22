@@ -161,6 +161,50 @@
     .fb-status.connected{background:var(--green)}
     .fb-status.error{background:var(--red)}
 
+    /* History — header button */
+    .hist-btn{margin-left:12px;background:rgba(255,255,255,.12);border:none;color:#fff;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .2s}
+    .hist-btn:hover,.hist-btn:active{background:rgba(255,255,255,.22)}
+    .hist-btn svg{width:22px;height:22px}
+    /* History — overlay */
+    .hist-overlay{position:fixed;inset:0;background:var(--g100);z-index:400;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s;visibility:hidden}
+    .hist-overlay.show{transform:translateY(0);visibility:visible}
+    .hist-head{background:linear-gradient(135deg,var(--blue-d),var(--blue));color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+    .hist-back,.hist-refresh{background:none;border:none;color:#fff;cursor:pointer;display:flex;align-items:center;padding:4px}
+    .hist-back svg,.hist-refresh svg{width:22px;height:22px}
+    .hist-title{font-size:17px;font-weight:700;flex:1}
+    .hist-count{font-size:11px;opacity:.7}
+    .hist-filters{display:flex;gap:8px;padding:12px 14px;background:#fff;border-bottom:1px solid var(--g200);flex-shrink:0;overflow-x:auto}
+    .hist-chip{padding:7px 18px;border-radius:20px;font-size:14px;font-weight:600;background:var(--g100);color:var(--g700);border:none;cursor:pointer;white-space:nowrap;font-family:'Sarabun',sans-serif}
+    .hist-chip.active{background:var(--blue);color:#fff}
+    .hist-offline{background:#fef9c3;color:#854d0e;font-size:13px;text-align:center;padding:8px;flex-shrink:0}
+    .hist-body{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+    .hist-loading,.hist-empty{text-align:center;color:var(--g400);padding:48px 20px;font-size:15px;display:flex;flex-direction:column;align-items:center;gap:12px}
+    .hist-card{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);padding:12px;display:flex;gap:10px;cursor:pointer;border-left:4px solid var(--blue)}
+    .hist-card-q{border-left-color:var(--green)}
+    .hist-card-main{flex:1;min-width:0}
+    .hist-card-top{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+    .hist-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px}
+    .badge-r{color:var(--blue);background:rgba(26,58,107,.1)}
+    .badge-q{color:#15803d;background:#dcfce7}
+    .hist-time{font-size:11px;color:var(--g400)}
+    .hist-status{font-size:10px;font-weight:600;color:var(--g500);background:var(--g100);padding:2px 7px;border-radius:10px;margin-left:auto;white-space:nowrap}
+    .hist-who{font-size:14px;font-weight:700;color:var(--g900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .hist-veh{color:var(--blue)}
+    .hist-detail{font-size:13px;color:var(--g500);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .hist-thumb{width:54px;height:54px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--g200)}
+    .hist-thumb-empty{display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--g400)}
+    /* History — detail sheet */
+    .hist-detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:450;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+    .hist-detail-overlay.show{opacity:1;pointer-events:all}
+    .hist-detail-card{background:#fff;width:100%;max-width:600px;max-height:88vh;overflow-y:auto;border-radius:18px 18px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));transform:translateY(20px);transition:transform .2s}
+    .hist-detail-overlay.show .hist-detail-card{transform:translateY(0)}
+    .detail-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .detail-x{background:var(--g100);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;color:var(--g500)}
+    .drow{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--g100);font-size:14px}
+    .drow span{color:var(--g500);flex-shrink:0}
+    .drow b{color:var(--g900);text-align:right;font-weight:600;word-break:break-word}
+    .detail-photos{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+    .detail-photos img{width:100%;border-radius:10px;cursor:pointer;background:var(--g100)}
   </style>
 </head>
 <body>
@@ -188,6 +232,9 @@
         <div class="time-d" id="timeDisplay">--:--:--</div>
         <div class="date-d" id="dateDisplay">--/--/----</div>
       </div>
+      <button class="hist-btn" onclick="openHistory()" aria-label="ประวัติย้อนหลัง">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </button>
     </div>
     <nav class="tabs">
       <button class="tab-btn active" id="tab-btn-repair" onclick="switchTab('repair',this)">
@@ -210,6 +257,32 @@
     <div class="success-sub" id="successSub">ข้อมูลถูกบันทึกเรียบร้อย</div>
     <div id="successSync" style="display:none;font-size:14px;font-weight:600;margin-top:-20px;margin-bottom:28px"></div>
     <button class="success-back" onclick="closeSuccess()">กลับหน้าหลัก</button>
+  </div>
+
+  <!-- History overlay -->
+  <div class="hist-overlay" id="histOverlay">
+    <div class="hist-head">
+      <button class="hist-back" onclick="closeHistory()" aria-label="ปิด">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <span class="hist-title">ประวัติย้อนหลัง</span>
+      <span class="hist-count" id="histCount"></span>
+      <button class="hist-refresh" onclick="loadHistory(true)" aria-label="รีเฟรช">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+      </button>
+    </div>
+    <div class="hist-filters">
+      <button class="hist-chip active" onclick="filterHistory('all',this)">ทั้งหมด</button>
+      <button class="hist-chip" onclick="filterHistory('repair',this)">ซ่อม</button>
+      <button class="hist-chip" onclick="filterHistory('requisition',this)">เบิก</button>
+    </div>
+    <div class="hist-offline" id="histOffline" style="display:none">ออฟไลน์ · แสดงข้อมูลล่าสุด</div>
+    <div class="hist-body" id="histBody"></div>
+  </div>
+
+  <!-- History detail sheet -->
+  <div class="hist-detail-overlay" id="histDetail" onclick="if(event.target===this)closeDetail()">
+    <div class="hist-detail-card" id="histDetailCard"></div>
   </div>
 
   <main class="content has-sticky-bar">
@@ -327,11 +400,6 @@
     <button type="submit" form="reqForm" class="btn btn-submit-gold" id="qSubmitBtn">ส่งใบเบิก →</button>
   </div>
 
-
-  <!-- Global upload indicator — visible even after closing the success overlay -->
-  <div id="uploadBar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:180;background:var(--blue);color:#fff;padding:8px 12px;text-align:center;font-size:13px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.2)">
-    <span class="spinner" style="display:inline-block;vertical-align:-3px;margin-right:6px"></span>กำลังอัปโหลดรูป... อย่าเพิ่งปิดแอป
-  </div>
 
   <div class="toast" id="toast"></div>
 
@@ -695,21 +763,8 @@
     }
 
     // ========== Sync to Sheets → delete from Firebase ==========
-    // Firebase is a temp buffer only — after GAS confirms Sheets write, doc is deleted.
-    // Photos live only in memory until this finishes, so we guard against closing mid-upload.
-    let pendingSync = 0;
-    let pendingPhotoSync = 0;  // syncs still holding un-uploaded photos in memory
-
-    // Warn the driver if they try to close while photos are still uploading (text is already safe in Firebase)
-    window.addEventListener('beforeunload', e => {
-      if (pendingPhotoSync > 0) { e.preventDefault(); e.returnValue = ''; }
-    });
-
-    function updateUploadBar() {
-      const bar = document.getElementById('uploadBar');
-      if (bar) bar.style.display = pendingPhotoSync > 0 ? 'block' : 'none';
-    }
-
+    // Firebase is a temp buffer only — after GAS confirms the Sheets write, the doc is deleted.
+    // Photo upload is best-effort: if it fails we stay silent (text is safe in Firebase, resynced later).
     function setSyncStatus(text, state) {
       const el = document.getElementById('successSync');
       if (!el) return;
@@ -738,9 +793,7 @@
     }
 
     async function syncAndClean(collection, docId, data, photoFiles) {
-      pendingSync++;
       const files = (Array.isArray(photoFiles) ? photoFiles : (photoFiles ? [photoFiles] : [])).filter(f => f);
-      if (files.length) { pendingPhotoSync++; updateUploadBar(); }
       try {
         const photos = [];
         const safeVeh = (data.vehicle || 'veh').replace(/[^\w\\u0E00-\\u0E7F-]/g, '') || 'veh';
@@ -757,17 +810,15 @@
         if (result.success) {
           // Sheets confirmed → clean up Firebase
           await db.collection(collection).doc(docId).delete();
-          if (files.length) setSyncStatus('บันทึกรูปครบแล้ว', 'done');
-        } else {
-          // GAS unreachable after retries → doc stays in Firebase; ask the driver to resend
-          if (files.length) setSyncStatus('อัปโหลดรูปไม่สำเร็จ กรุณาส่งใหม่อีกครั้ง', 'error');
+          if (files.length) setSyncStatus('บันทึกรูปแล้ว', 'done');
+        } else if (files.length) {
+          // Photo upload is best-effort — stay silent so the driver isn't alarmed.
+          // Text is safe in Firebase; resyncPending() retries it on next app open.
+          setSyncStatus(null);
         }
       } catch (err) {
         console.warn('Sync failed, doc kept in Firebase:', err);
-        if (files.length) setSyncStatus('อัปโหลดรูปไม่สำเร็จ กรุณาส่งใหม่อีกครั้ง', 'error');
-      } finally {
-        pendingSync--;
-        if (files.length) { pendingPhotoSync--; updateUploadBar(); }
+        setSyncStatus(null);  // silent — photos are best-effort
       }
     }
 
@@ -810,6 +861,154 @@
       document.querySelectorAll('[id^=qThumb]').forEach(el => el.remove());
       updateAddBtn('q');
     }
+
+    // ========== History ==========
+    let historyData = [];
+    let historyView = [];
+    let historyFilter = 'all';
+
+    function openHistory() {
+      document.getElementById('histOverlay').classList.add('show');
+      loadCachedHistory();
+      loadHistory(false);
+    }
+    function closeHistory() { document.getElementById('histOverlay').classList.remove('show'); }
+
+    function loadCachedHistory() {
+      if (historyData.length) return;
+      try {
+        const c = JSON.parse(localStorage.getItem('trr_history') || '[]');
+        if (c.length) { historyData = c; renderHistory(); }
+      } catch (e) {}
+    }
+
+    async function loadHistory(force) {
+      const body = document.getElementById('histBody');
+      const off = document.getElementById('histOffline');
+      off.style.display = 'none';
+      if (!historyData.length || force) {
+        body.innerHTML = '<div class="hist-loading"><div class="spinner-dark"></div> กำลังโหลด...</div>';
+      }
+      if (!navigator.onLine) {
+        off.style.display = 'block';
+        if (!historyData.length) body.innerHTML = '<div class="hist-empty">⚠️ ออฟไลน์ · ยังไม่มีข้อมูลที่บันทึกไว้</div>';
+        else renderHistory();
+        return;
+      }
+      try {
+        const resp = await fetch(SCRIPT_URL + '?action=history');
+        const result = await resp.json();
+        if (result && result.success) {
+          historyData = (result.items || [])
+            .sort((a, b) => (b.ts || parseThaiDate(b.datetime)) - (a.ts || parseThaiDate(a.datetime)))
+            .slice(0, 30);
+          localStorage.setItem('trr_history', JSON.stringify(historyData));
+          renderHistory();
+        } else if (!historyData.length) {
+          body.innerHTML = '<div class="hist-empty">โหลดไม่สำเร็จ · ลองรีเฟรช</div>';
+        }
+      } catch (e) {
+        off.style.display = 'block';
+        if (!historyData.length) body.innerHTML = '<div class="hist-empty">โหลดไม่ได้ · ลองใหม่อีกครั้ง</div>';
+        else renderHistory();
+      }
+    }
+
+    // thaiNow() format: "22/06/2569 13:15:37" (Buddhist year) → epoch ms for sorting
+    function parseThaiDate(str) {
+      const m = String(str).match(/(\d+)\/(\d+)\/(\d+)[,\s]+(\d+):(\d+):(\d+)/);
+      if (!m) return 0;
+      return new Date(+m[3] - 543, +m[2] - 1, +m[1], +m[4], +m[5], +m[6]).getTime();
+    }
+
+    function shortDate(it) {
+      const t = (it && it.ts) ? it.ts : parseThaiDate((it && it.datetime) || '');
+      if (!t) return esc(String((it && it.datetime) || ''));
+      const d = new Date(t);
+      return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' }) + ' ' +
+             d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    }
+
+    // Drive URL stored as uc?export=view&id=XXX — pull the file id for thumbnail / full views
+    function driveId(url) {
+      const m = String(url).match(/[-\w]{25,}/);
+      return m ? m[0] : '';
+    }
+    function driveThumb(url, w) {
+      const id = driveId(url);
+      return id ? `https://drive.google.com/thumbnail?id=${id}&sz=w${w || 400}` : url;
+    }
+    function driveView(url) {
+      const id = driveId(url);
+      return id ? `https://drive.google.com/file/d/${id}/view` : url;
+    }
+    function imgFallback(el) {
+      const d = document.createElement('div');
+      d.className = 'hist-thumb hist-thumb-empty';
+      d.textContent = '📷';
+      el.replaceWith(d);
+    }
+
+    function filterHistory(f, btn) {
+      historyFilter = f;
+      document.querySelectorAll('.hist-chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const body = document.getElementById('histBody');
+      historyView = historyData.filter(it => historyFilter === 'all' || it.type === historyFilter);
+      document.getElementById('histCount').textContent = historyData.length ? historyData.length + ' รายการ' : '';
+      if (!historyView.length) { body.innerHTML = '<div class="hist-empty">ยังไม่มีประวัติ</div>'; return; }
+      body.innerHTML = historyView.map((it, i) => {
+        const isR = it.type === 'repair';
+        const photos = (it.photoUrl || '').split(',').map(s => s.trim()).filter(Boolean);
+        const thumb = photos.length
+          ? `<img class="hist-thumb" src="${driveThumb(photos[0])}" alt="" loading="lazy" onerror="imgFallback(this)">`
+          : `<div class="hist-thumb hist-thumb-empty">📷</div>`;
+        return `<div class="hist-card ${isR ? 'hist-card-r' : 'hist-card-q'}" onclick="openDetail(${i})">
+          <div class="hist-card-main">
+            <div class="hist-card-top">
+              <span class="hist-badge ${isR ? 'badge-r' : 'badge-q'}">${isR ? 'ซ่อม' : 'เบิก'}</span>
+              <span class="hist-time">${shortDate(it)}</span>
+              <span class="hist-status">${esc(it.status)}</span>
+            </div>
+            <div class="hist-who">${esc(it.name)} · <span class="hist-veh">${esc(it.vehicle)}</span></div>
+            <div class="hist-detail">${esc(it.detail)}</div>
+          </div>
+          ${thumb}
+        </div>`;
+      }).join('');
+    }
+
+    function openDetail(i) {
+      const it = historyView[i];
+      if (!it) return;
+      const isR = it.type === 'repair';
+      const photos = (it.photoUrl || '').split(',').map(s => s.trim()).filter(Boolean);
+      const imgs = photos.length
+        ? `<div class="detail-photos">${photos.map(p => `<img src="${driveThumb(p, 1000)}" alt="" onclick="window.open('${driveView(p)}','_blank')" onerror="this.style.display='none'">`).join('')}</div>`
+        : '';
+      document.getElementById('histDetailCard').innerHTML =
+        `<div class="detail-head">
+          <span class="hist-badge ${isR ? 'badge-r' : 'badge-q'}">${isR ? 'แจ้งซ่อม' : 'เบิกอุปกรณ์'}</span>
+          <button class="detail-x" onclick="closeDetail()" aria-label="ปิด">✕</button>
+        </div>
+        <div class="detail-rows">
+          <div class="drow"><span>วันที่</span><b>${esc(it.datetime)}</b></div>
+          <div class="drow"><span>${isR ? 'ผู้แจ้ง' : 'ผู้เบิก'}</span><b>${esc(it.name)}</b></div>
+          <div class="drow"><span>ทะเบียน</span><b>${esc(it.vehicle)}</b></div>
+          <div class="drow"><span>${isR ? 'อาการ' : 'รายการ'}</span><b>${esc(it.detail)}</b></div>
+          <div class="drow"><span>สถานะ</span><b>${esc(it.status)}</b></div>
+        </div>${imgs}`;
+      document.getElementById('histDetail').classList.add('show');
+    }
+    function closeDetail() { document.getElementById('histDetail').classList.remove('show'); }
 
     // ========== PWA ==========
     window.addEventListener('beforeinstallprompt', e => {
@@ -856,7 +1055,7 @@
     renderRecentVehicles();
 
     // App version — lets you confirm a driver is on the latest build
-    const APP_VERSION = 'v3.1 · 2026-06-20';
+    const APP_VERSION = 'v3.2 · 2026-06-22';
     document.getElementById('appVer').textContent = APP_VERSION;
     console.log('TRR999', APP_VERSION);
 
