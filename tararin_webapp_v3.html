@@ -162,7 +162,7 @@
     .fb-status.error{background:var(--red)}
 
     /* History — header button */
-    .hist-btn{margin-left:12px;background:rgba(255,255,255,.12);border:none;color:#fff;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .2s}
+    .hist-btn{background:rgba(255,255,255,.12);border:none;color:#fff;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .2s}
     .hist-btn:hover,.hist-btn:active{background:rgba(255,255,255,.22)}
     .hist-btn svg{width:22px;height:22px}
     /* History — overlay */
@@ -205,6 +205,18 @@
     .drow b{color:var(--g900);text-align:right;font-weight:600;word-break:break-word}
     .detail-photos{margin-top:14px;display:flex;flex-direction:column;gap:10px}
     .detail-photos img{width:100%;border-radius:10px;cursor:pointer;background:var(--g100)}
+    /* Maintenance schedule popup */
+    .maint-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:550;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .2s}
+    .maint-overlay.show{opacity:1;pointer-events:all}
+    .maint-box{background:#fff;border-radius:16px;max-width:340px;width:100%;padding:22px;transform:scale(.92);transition:transform .2s}
+    .maint-overlay.show .maint-box{transform:scale(1)}
+    .maint-title{font-size:17px;font-weight:800;color:var(--blue);margin-bottom:6px;text-align:center}
+    .maint-sub{font-size:12px;color:var(--g400);text-align:center;margin-bottom:16px}
+    .maint-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--g100);font-size:15px}
+    .maint-row:last-of-type{border-bottom:none}
+    .maint-row span{color:var(--g700)}
+    .maint-row b{color:var(--blue);font-weight:700}
+    .maint-close{width:100%;margin-top:18px;background:var(--blue);color:#fff;border:none;border-radius:10px;padding:13px;font-family:'Sarabun',sans-serif;font-size:15px;font-weight:700;cursor:pointer}
   </style>
 </head>
 <body>
@@ -232,6 +244,9 @@
         <div class="time-d" id="timeDisplay">--:--:--</div>
         <div class="date-d" id="dateDisplay">--/--/----</div>
       </div>
+      <button class="hist-btn" onclick="openMaint()" aria-label="รอบซ่อมบำรุง">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      </button>
       <button class="hist-btn" onclick="openHistory()" aria-label="ประวัติย้อนหลัง">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
       </button>
@@ -400,6 +415,18 @@
     <button type="submit" form="reqForm" class="btn btn-submit-gold" id="qSubmitBtn">ส่งใบเบิก →</button>
   </div>
 
+
+  <!-- Maintenance schedule popup -->
+  <div class="maint-overlay" id="maintOverlay" onclick="if(event.target===this)closeMaint()">
+    <div class="maint-box">
+      <div class="maint-title">🔧 รอบซ่อมบำรุง</div>
+      <div class="maint-sub">ระยะเปลี่ยนถ่ายโดยประมาณ</div>
+      <div class="maint-row"><span>น้ำมันเครื่อง</span><b>ทุก 35,000 กม.</b></div>
+      <div class="maint-row"><span>น้ำมันเกียร์</span><b>ทุก 100,000 กม.</b></div>
+      <div class="maint-row"><span>เฟืองท้าย</span><b>ทุก 100,000 กม.</b></div>
+      <button class="maint-close" onclick="closeMaint()">ปิด</button>
+    </div>
+  </div>
 
   <div class="toast" id="toast"></div>
 
@@ -1009,6 +1036,10 @@
       document.getElementById('histDetail').classList.add('show');
     }
     function closeDetail() { document.getElementById('histDetail').classList.remove('show'); }
+
+    // ========== Maintenance schedule popup ==========
+    function openMaint() { document.getElementById('maintOverlay').classList.add('show'); }
+    function closeMaint() { document.getElementById('maintOverlay').classList.remove('show'); }
 
     // ========== PWA ==========
     window.addEventListener('beforeinstallprompt', e => {
